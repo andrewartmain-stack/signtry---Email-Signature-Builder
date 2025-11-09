@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - SignTry</title>
+    <meta name="description" content="SignTry Privacy Policy - Learn how we protect and handle your data.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional Privacy Page Styles */
+        .privacy-hero {
+            padding: 10rem 0 4rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            text-align: center;
+        }
+
+        .privacy-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .privacy-hero p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .privacy-content {
+            padding: 5rem 0;
+            background: var(--bg-white);
+        }
+
+        .privacy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .privacy-section {
+            margin-bottom: 3rem;
+        }
+
+        .privacy-section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .privacy-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .privacy-section p {
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .privacy-section ul {
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .privacy-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .privacy-section strong {
+            color: var(--text-dark);
+        }
+
+        .last-updated {
+            background: var(--bg-gray);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .last-updated p {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        @media (max-width: 768px) {
+            .privacy-hero {
+                padding: 8rem 0 3rem;
+            }
+
+            .privacy-hero h1 {
+                font-size: 2.25rem;
+            }
+
+            .privacy-content {
+                padding: 3rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .privacy-hero h1 {
+                font-size: 2rem;
+            }
+
+            .privacy-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <!-- <img src="./public/logo.svg" alt="logo" style="max-width: 150px; width: 100%;"> -->
+                <svg data-logo="logo" viewBox="0 0 164 50" style="width: 150px;">
+                    <g id="logogram" transform="translate(0, 5) rotate(0) ">
+                        <path
+                            d="M13.7544 6.5C13.7544 4.77609 13.0696 3.12278 11.8506 1.90381C10.6316 0.684818 8.9783 0 7.25439 0C5.53048 0 3.87719 0.684818 2.6582 1.90381C1.43921 3.12278 0.754395 4.77609 0.754395 6.5V26.1553L6.10734 29.9908V39.3346H8.40145V29.9908L13.7544 26.1553V6.5ZM11.4603 17.4926L8.40145 20.5515V17.6838L11.4603 14.625V17.4926ZM3.09631 14.625L6.15513 17.6838V20.5515L3.09631 17.4926V14.625ZM11.4603 11.375L7.25439 15.5809L3.04851 11.2794V8.41177L7.25439 12.6176L11.4603 8.41177V11.375ZM7.25439 2.29412C8.17939 2.2982 9.07754 2.60541 9.81126 3.16867C10.545 3.73192 11.0739 4.52016 11.3169 5.41268L7.25439 9.46323L3.19189 5.41268C3.42601 4.51129 3.95107 3.71235 4.68562 3.13985C5.42016 2.56733 6.32311 2.25324 7.25439 2.24631V2.29412ZM3.04851 24.9963V20.6949L6.10734 23.7537V27.171L3.04851 24.9963ZM8.40145 27.1829V23.7537L11.4603 20.6949V24.9844L8.40145 27.1829Z"
+                            fill="#51A2FF" />
+                    </g>
+                    <g id="logotype" transform="translate(20, 1)">
+                        <path fill="#111111"
+                            d="M17.06 38.24Q14.37 38.24 12.23 37.37Q10.10 36.49 8.82 34.78Q7.54 33.06 7.47 30.65L7.47 30.65L13.84 30.65Q13.98 32.02 14.79 32.73Q15.59 33.45 16.89 33.45L16.89 33.45Q18.22 33.45 18.98 32.84Q19.76 32.23 19.76 31.14L19.76 31.14Q19.76 30.23 19.14 29.63Q18.53 29.04 17.64 28.66Q16.75 28.27 15.10 27.78L15.10 27.78Q12.72 27.04 11.21 26.31Q9.71 25.57 8.63 24.14Q7.54 22.70 7.54 20.39L7.54 20.39Q7.54 16.96 10.03 15.02Q12.51 13.08 16.50 13.08L16.50 13.08Q20.56 13.08 23.05 15.02Q25.53 16.96 25.71 20.43L25.71 20.43L19.23 20.43Q19.16 19.24 18.36 18.56Q17.55 17.87 16.29 17.87L16.29 17.87Q15.21 17.87 14.54 18.45Q13.88 19.03 13.88 20.11L13.88 20.11Q13.88 21.30 15.00 21.97Q16.12 22.63 18.50 23.41L18.50 23.41Q20.88 24.21 22.36 24.95Q23.85 25.68 24.94 27.08Q26.02 28.48 26.02 30.68L26.02 30.68Q26.02 32.78 24.95 34.50Q23.89 36.22 21.86 37.23Q19.83 38.24 17.06 38.24L17.06 38.24ZM32.71 16.44Q31.13 16.44 30.13 15.51Q29.14 14.58 29.14 13.22L29.14 13.22Q29.14 11.82 30.13 10.89Q31.13 9.96 32.71 9.96L32.71 9.96Q34.25 9.96 35.24 10.89Q36.24 11.82 36.24 13.22L36.24 13.22Q36.24 14.58 35.24 15.51Q34.25 16.44 32.71 16.44L32.71 16.44ZM29.70 18.47L35.68 18.47L35.68 38L29.70 38L29.70 18.47ZM47.44 18.19Q49.51 18.19 51.06 19.03Q52.62 19.87 53.46 21.23L53.46 21.23L53.46 18.47L59.45 18.47L59.45 37.97Q59.45 40.66 58.38 42.85Q57.31 45.04 55.12 46.33Q52.94 47.63 49.68 47.63L49.68 47.63Q45.34 47.63 42.65 45.58Q39.95 43.53 39.57 40.03L39.57 40.03L45.48 40.03Q45.76 41.15 46.81 41.80Q47.86 42.45 49.40 42.45L49.40 42.45Q51.26 42.45 52.36 41.38Q53.46 40.31 53.46 37.97L53.46 37.97L53.46 35.20Q52.59 36.56 51.05 37.42Q49.51 38.28 47.44 38.28L47.44 38.28Q45.03 38.28 43.07 37.04Q41.11 35.80 39.97 33.50Q38.83 31.21 38.83 28.20L38.83 28.20Q38.83 25.19 39.97 22.91Q41.11 20.64 43.07 19.41Q45.03 18.19 47.44 18.19L47.44 18.19ZM53.46 28.23Q53.46 25.99 52.22 24.70Q50.98 23.41 49.19 23.41L49.19 23.41Q47.41 23.41 46.16 24.68Q44.92 25.96 44.92 28.20L44.92 28.20Q44.92 30.44 46.16 31.75Q47.41 33.06 49.19 33.06L49.19 33.06Q50.98 33.06 52.22 31.77Q53.46 30.48 53.46 28.23L53.46 28.23ZM75.69 18.26Q79.12 18.26 81.16 20.48Q83.21 22.70 83.21 26.59L83.21 26.59L83.21 38L77.26 38L77.26 27.39Q77.26 25.43 76.25 24.35Q75.23 23.27 73.52 23.27L73.52 23.27Q71.80 23.27 70.78 24.35Q69.77 25.43 69.77 27.39L69.77 27.39L69.77 38L63.79 38L63.79 18.47L69.77 18.47L69.77 21.06Q70.68 19.76 72.22 19.01Q73.76 18.26 75.69 18.26L75.69 18.26ZM86.05 13.43L105.05 13.43L105.05 18.22L98.54 18.22L98.54 38L92.56 38L92.56 18.22L86.05 18.22L86.05 13.43ZM114.05 21.72Q115.10 20.11 116.67 19.19Q118.25 18.26 120.17 18.26L120.17 18.26L120.17 24.59L118.53 24.59Q116.29 24.59 115.17 25.56Q114.05 26.52 114.05 28.93L114.05 28.93L114.05 38L108.06 38L108.06 18.47L114.05 18.47L114.05 21.72ZM136.52 18.47L142.99 18.47L130.74 47.27L124.30 47.27L128.78 37.34L120.84 18.47L127.52 18.47L132.04 30.68L136.52 18.47Z" />
+                    </g>
+                </svg>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html">Home</a>
+                <a href="index.html#features">Features</a>
+                <a href="index.html#how-it-works">How It Works</a>
+                <a href="index.html#examples">Examples</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="index.html#faq">FAQ</a>
+                <button class="btn-secondary">Sign In</button>
+                <button class="btn-primary">Get Started</button>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Privacy Hero Section -->
+    <section class="privacy-hero">
+        <div class="container">
+            <h1>Privacy Policy</h1>
+            <p>Your privacy is important to us. Learn how we protect and handle your data.</p>
+        </div>
+    </section>
+
+    <!-- Privacy Content -->
+    <section class="privacy-content">
+        <div class="privacy-container">
+            <div class="last-updated">
+                <p>Last Updated: November 5, 2025</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Introduction</h2>
+                <p>At SignTry, we respect your privacy and are committed to protecting your personal data. This privacy
+                    policy will inform you about how we look after your personal data when you visit our website and
+                    tell you about your privacy rights and how the law protects you.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Information We Collect</h2>
+                <p>We may collect, use, store and transfer different kinds of personal data about you which we have
+                    grouped together as follows:</p>
+
+                <h3>Identity Data</h3>
+                <p>Includes first name, last name, username or similar identifier.</p>
+
+                <h3>Contact Data</h3>
+                <p>Includes email address and telephone numbers.</p>
+
+                <h3>Technical Data</h3>
+                <p>Includes internet protocol (IP) address, your login data, browser type and version, time zone setting
+                    and location, browser plug-in types and versions, operating system and platform, and other
+                    technology on the devices you use to access this website.</p>
+
+                <h3>Usage Data</h3>
+                <p>Includes information about how you use our website, products and services.</p>
+
+                <h3>Marketing and Communications Data</h3>
+                <p>Includes your preferences in receiving marketing from us and our third parties and your communication
+                    preferences.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>How We Use Your Information</h2>
+                <p>We will only use your personal data when the law allows us to. Most commonly, we will use your
+                    personal data in the following circumstances:</p>
+
+                <ul>
+                    <li><strong>To provide and maintain our Service:</strong> Including to monitor the usage of our
+                        service.</li>
+                    <li><strong>To manage your account:</strong> To manage your registration as a user of the Service.
+                    </li>
+                    <li><strong>For the performance of a contract:</strong> The development, compliance and undertaking
+                        of the purchase contract for the products, items or services you have purchased.</li>
+                    <li><strong>To contact you:</strong> To contact you by email, telephone calls, SMS, or other
+                        equivalent forms of electronic communication.</li>
+                    <li><strong>To provide you with news, special offers and general information</strong> about other
+                        goods, services and events which we offer.</li>
+                    <li><strong>To manage your requests:</strong> To attend and manage your requests to us.</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Data Security</h2>
+                <p>We have put in place appropriate security measures to prevent your personal data from being
+                    accidentally lost, used or accessed in an unauthorized way, altered or disclosed. In addition, we
+                    limit access to your personal data to those employees, agents, contractors and other third parties
+                    who have a business need to know.</p>
+                <p>We have put in place procedures to deal with any suspected personal data breach and will notify you
+                    and any applicable regulator of a breach where we are legally required to do so.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Data Retention</h2>
+                <p>We will only retain your personal data for as long as reasonably necessary to fulfill the purposes we
+                    collected it for, including for the purposes of satisfying any legal, regulatory, tax, accounting or
+                    reporting requirements.</p>
+                <p>To determine the appropriate retention period for personal data, we consider the amount, nature and
+                    sensitivity of the personal data, the potential risk of harm from unauthorized use or disclosure of
+                    your personal data, the purposes for which we process your personal data and whether we can achieve
+                    those purposes through other means, and the applicable legal, regulatory, tax, accounting or other
+                    requirements.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Your Legal Rights</h2>
+                <p>Under certain circumstances, you have rights under data protection laws in relation to your personal
+                    data:</p>
+
+                <ul>
+                    <li><strong>Request access</strong> to your personal data</li>
+                    <li><strong>Request correction</strong> of your personal data</li>
+                    <li><strong>Request erasure</strong> of your personal data</li>
+                    <li><strong>Object to processing</strong> of your personal data</li>
+                    <li><strong>Request restriction of processing</strong> your personal data</li>
+                    <li><strong>Request transfer</strong> of your personal data</li>
+                    <li><strong>Right to withdraw consent</strong></li>
+                </ul>
+
+                <p>If you wish to exercise any of the rights set out above, please contact us.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Third-Party Links</h2>
+                <p>This website may include links to third-party websites, plug-ins and applications. Clicking on those
+                    links or enabling those connections may allow third parties to collect or share data about you. We
+                    do not control these third-party websites and are not responsible for their privacy statements. When
+                    you leave our website, we encourage you to read the privacy policy of every website you visit.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Cookies</h2>
+                <p>We may use cookies and similar tracking technologies to track the activity on our Service and store
+                    certain information. You can instruct your browser to refuse all cookies or to indicate when a
+                    cookie is being sent. However, if you do not accept cookies, you may not be able to use some
+                    portions of our Service.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Changes to This Privacy Policy</h2>
+                <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the
+                    new Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy
+                    Policy.</p>
+                <p>You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy
+                    Policy are effective when they are posted on this page.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h2>Contact Us</h2>
+                <p>If you have any questions about this Privacy Policy, you can contact us:</p>
+                <ul>
+                    <li>By email: privacy@signtry.com</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <svg data-logo="logo" viewBox="0 0 164 50" style="width: 150px;">
+                            <g id="logogram" transform="translate(0, 5) rotate(0) ">
+                                <path
+                                    d="M13.7544 6.5C13.7544 4.77609 13.0696 3.12278 11.8506 1.90381C10.6316 0.684818 8.9783 0 7.25439 0C5.53048 0 3.87719 0.684818 2.6582 1.90381C1.43921 3.12278 0.754395 4.77609 0.754395 6.5V26.1553L6.10734 29.9908V39.3346H8.40145V29.9908L13.7544 26.1553V6.5ZM11.4603 17.4926L8.40145 20.5515V17.6838L11.4603 14.625V17.4926ZM3.09631 14.625L6.15513 17.6838V20.5515L3.09631 17.4926V14.625ZM11.4603 11.375L7.25439 15.5809L3.04851 11.2794V8.41177L7.25439 12.6176L11.4603 8.41177V11.375ZM7.25439 2.29412C8.17939 2.2982 9.07754 2.60541 9.81126 3.16867C10.545 3.73192 11.0739 4.52016 11.3169 5.41268L7.25439 9.46323L3.19189 5.41268C3.42601 4.51129 3.95107 3.71235 4.68562 3.13985C5.42016 2.56733 6.32311 2.25324 7.25439 2.24631V2.29412ZM3.04851 24.9963V20.6949L6.10734 23.7537V27.171L3.04851 24.9963ZM8.40145 27.1829V23.7537L11.4603 20.6949V24.9844L8.40145 27.1829Z"
+                                    fill="#51A2FF" />
+                            </g>
+                            <g id="logotype" transform="translate(20, 1)">
+                                <path fill="#ffffff"
+                                    d="M17.06 38.24Q14.37 38.24 12.23 37.37Q10.10 36.49 8.82 34.78Q7.54 33.06 7.47 30.65L7.47 30.65L13.84 30.65Q13.98 32.02 14.79 32.73Q15.59 33.45 16.89 33.45L16.89 33.45Q18.22 33.45 18.98 32.84Q19.76 32.23 19.76 31.14L19.76 31.14Q19.76 30.23 19.14 29.63Q18.53 29.04 17.64 28.66Q16.75 28.27 15.10 27.78L15.10 27.78Q12.72 27.04 11.21 26.31Q9.71 25.57 8.63 24.14Q7.54 22.70 7.54 20.39L7.54 20.39Q7.54 16.96 10.03 15.02Q12.51 13.08 16.50 13.08L16.50 13.08Q20.56 13.08 23.05 15.02Q25.53 16.96 25.71 20.43L25.71 20.43L19.23 20.43Q19.16 19.24 18.36 18.56Q17.55 17.87 16.29 17.87L16.29 17.87Q15.21 17.87 14.54 18.45Q13.88 19.03 13.88 20.11L13.88 20.11Q13.88 21.30 15.00 21.97Q16.12 22.63 18.50 23.41L18.50 23.41Q20.88 24.21 22.36 24.95Q23.85 25.68 24.94 27.08Q26.02 28.48 26.02 30.68L26.02 30.68Q26.02 32.78 24.95 34.50Q23.89 36.22 21.86 37.23Q19.83 38.24 17.06 38.24L17.06 38.24ZM32.71 16.44Q31.13 16.44 30.13 15.51Q29.14 14.58 29.14 13.22L29.14 13.22Q29.14 11.82 30.13 10.89Q31.13 9.96 32.71 9.96L32.71 9.96Q34.25 9.96 35.24 10.89Q36.24 11.82 36.24 13.22L36.24 13.22Q36.24 14.58 35.24 15.51Q34.25 16.44 32.71 16.44L32.71 16.44ZM29.70 18.47L35.68 18.47L35.68 38L29.70 38L29.70 18.47ZM47.44 18.19Q49.51 18.19 51.06 19.03Q52.62 19.87 53.46 21.23L53.46 21.23L53.46 18.47L59.45 18.47L59.45 37.97Q59.45 40.66 58.38 42.85Q57.31 45.04 55.12 46.33Q52.94 47.63 49.68 47.63L49.68 47.63Q45.34 47.63 42.65 45.58Q39.95 43.53 39.57 40.03L39.57 40.03L45.48 40.03Q45.76 41.15 46.81 41.80Q47.86 42.45 49.40 42.45L49.40 42.45Q51.26 42.45 52.36 41.38Q53.46 40.31 53.46 37.97L53.46 37.97L53.46 35.20Q52.59 36.56 51.05 37.42Q49.51 38.28 47.44 38.28L47.44 38.28Q45.03 38.28 43.07 37.04Q41.11 35.80 39.97 33.50Q38.83 31.21 38.83 28.20L38.83 28.20Q38.83 25.19 39.97 22.91Q41.11 20.64 43.07 19.41Q45.03 18.19 47.44 18.19L47.44 18.19ZM53.46 28.23Q53.46 25.99 52.22 24.70Q50.98 23.41 49.19 23.41L49.19 23.41Q47.41 23.41 46.16 24.68Q44.92 25.96 44.92 28.20L44.92 28.20Q44.92 30.44 46.16 31.75Q47.41 33.06 49.19 33.06L49.19 33.06Q50.98 33.06 52.22 31.77Q53.46 30.48 53.46 28.23L53.46 28.23ZM75.69 18.26Q79.12 18.26 81.16 20.48Q83.21 22.70 83.21 26.59L83.21 26.59L83.21 38L77.26 38L77.26 27.39Q77.26 25.43 76.25 24.35Q75.23 23.27 73.52 23.27L73.52 23.27Q71.80 23.27 70.78 24.35Q69.77 25.43 69.77 27.39L69.77 27.39L69.77 38L63.79 38L63.79 18.47L69.77 18.47L69.77 21.06Q70.68 19.76 72.22 19.01Q73.76 18.26 75.69 18.26L75.69 18.26ZM86.05 13.43L105.05 13.43L105.05 18.22L98.54 18.22L98.54 38L92.56 38L92.56 18.22L86.05 18.22L86.05 13.43ZM114.05 21.72Q115.10 20.11 116.67 19.19Q118.25 18.26 120.17 18.26L120.17 18.26L120.17 24.59L118.53 24.59Q116.29 24.59 115.17 25.56Q114.05 26.52 114.05 28.93L114.05 28.93L114.05 38L108.06 38L108.06 18.47L114.05 18.47L114.05 21.72ZM136.52 18.47L142.99 18.47L130.74 47.27L124.30 47.27L128.78 37.34L120.84 18.47L127.52 18.47L132.04 30.68L136.52 18.47Z" />
+                            </g>
+                        </svg>
+                    </div>
+                    <p class="footer-tagline">Build professional email signatures in seconds</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#demo">Demo</a>
+                    </div>
+                    <!-- <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#">About</a>
+                        <a href="#">Blog</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Contact</a>
+                    </div> -->
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="#faq">FAQ</a>
+                        <a href="mailto:andrewartmain@gmail.com">Contact Support</a>
+                        <a href="#">Guides</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="./privacy.html">Privacy</a>
+                        <a href="./terms.html">Terms</a>
+                        <a href="./gdpr.html">GDPR</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SignTry.com | All rights reserved.</p>
+                <!-- <div class="footer-socials">
+                    <a href="#" aria-label="Twitter">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M6.29 18.25C13.84 18.25 17.96 12.11 17.96 6.77C17.96 6.58 17.96 6.39 17.95 6.2C18.75 5.62 19.45 4.89 20 4.06C19.27 4.38 18.49 4.6 17.68 4.7C18.51 4.19 19.14 3.39 19.45 2.45C18.66 2.92 17.79 3.26 16.87 3.45C16.13 2.66 15.06 2.17 13.89 2.17C11.66 2.17 9.86 3.97 9.86 6.2C9.86 6.51 9.89 6.82 9.96 7.11C6.54 6.94 3.49 5.35 1.42 2.91C1.08 3.49 0.88 4.19 0.88 4.94C0.88 6.36 1.61 7.61 2.71 8.35C2.04 8.33 1.42 8.15 0.88 7.85V7.9C0.88 9.85 2.26 11.48 4.1 11.85C3.77 11.94 3.42 11.99 3.06 11.99C2.81 11.99 2.57 11.97 2.33 11.92C2.82 13.53 4.3 14.69 6.07 14.72C4.7 15.79 2.98 16.43 1.12 16.43C0.8 16.43 0.49 16.41 0.18 16.38C1.97 17.52 4.09 18.17 6.37 18.17" />
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="LinkedIn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M18.72 0H1.28C0.57 0 0 0.57 0 1.28V18.72C0 19.43 0.57 20 1.28 20H18.72C19.43 20 20 19.43 20 18.72V1.28C20 0.57 19.43 0 18.72 0ZM5.92 17.04H2.96V7.48H5.92V17.04ZM4.44 6.16C3.49 6.16 2.72 5.39 2.72 4.44C2.72 3.49 3.49 2.72 4.44 2.72C5.39 2.72 6.16 3.49 6.16 4.44C6.16 5.39 5.39 6.16 4.44 6.16ZM17.04 17.04H14.08V12.4C14.08 11.26 14.06 9.79 12.48 9.79C10.88 9.79 10.64 11.04 10.64 12.32V17.04H7.68V7.48H10.52V8.84H10.56C10.96 8.08 11.96 7.28 13.44 7.28C16.44 7.28 17.04 9.24 17.04 11.8V17.04Z" />
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M20 10C20 4.48 15.52 0 10 0C4.48 0 0 4.48 0 10C0 14.84 3.44 18.87 8 19.8V13H6V10H8V7.5C8 5.57 9.57 4 11.5 4H14V7H12C11.45 7 11 7.45 11 8V10H14V13H11V19.95C16.05 19.45 20 15.19 20 10Z" />
+                        </svg>
+                    </a>
+                </div> -->
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
