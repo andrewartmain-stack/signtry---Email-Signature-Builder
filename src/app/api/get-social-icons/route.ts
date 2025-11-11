@@ -25,9 +25,9 @@ export async function GET() {
       );
     }
 
-    let publicUrls: { name: string; png: string; gif: string }[] = [];
+    const publicUrls: { name: string; png: string; gif: string }[] = [];
 
-    for (let folder of folders) {
+    for (const folder of folders) {
       const { data: pngData } = await supabase.storage
         .from('social-icons')
         .getPublicUrl(`${folder.name}/${folder.name}.png`);

@@ -45,7 +45,7 @@ const SignatureBuilderForm: FC<{
 
     const [isCheckboxCompanyLogoChecked, setIsCheckboxCompanyLogoChecked] = useState<boolean>(false);
 
-    const [selectedSocialIcons, setSelectedSocialIcons] = useState<any[]>([])
+    const [selectedSocialIcons, setSelectedSocialIcons] = useState<Array<Record<string, string>>>([])
 
     const [currentTab, setCurrentTab] = useState<string>(tabs[0]);
 

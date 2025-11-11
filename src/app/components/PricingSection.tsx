@@ -34,7 +34,7 @@ export default function PricingSection({ userId }: { userId: string }) {
                         Choose Your Plan to Get Started
                     </h2>
                     <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
-                        Choose the plan that's right for you. Cancel anytime
+                        Choose the plan that&apos;s right for you. Cancel anytime
                     </p>
 
                     {/* Billing Toggle */}

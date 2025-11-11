@@ -27,9 +27,9 @@ export async function GET() {
       );
     }
 
-    let publicUrls: string[] = [];
+    const publicUrls: string[] = [];
 
-    for (let file of files) {
+    for (const file of files) {
       const { data } = await supabase.storage
         .from('badges')
         .getPublicUrl(file.name);

@@ -28,11 +28,8 @@ export async function uploadImageToBucket(
     const mimeType = matches[1];
     const base64Data = matches[2];
 
-    let extension: string;
-    let contentType: string;
-
-    extension = mimeType.split('/')[1];
-    contentType = mimeType;
+    const extension = mimeType.split('/')[1];
+    const contentType = mimeType;
 
     const buffer = Buffer.from(base64Data, 'base64');
 

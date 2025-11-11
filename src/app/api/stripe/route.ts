@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { stripe } from '../../utils/stripe/stripe';
 import { supabaseAdmin } from '../../utils/supabase/admin';
+import Stripe from 'stripe';
 
 const STRIPE_SIGNING_SECRET = process.env.STRIPE_SIGNING_SECRET!;
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
 
         revalidatePath('/', 'layout');
 
-        const session = event.data.object as any;
+        const session = event.data.object;
         const userId = session.metadata?.userId;
         const priceId = session.metadata?.priceId;
 
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = data.object as any;
+        const subscription = data.object as Stripe.Subscription;
 
         // userId можно хранить в metadata подписки
         const userId = subscription.metadata?.userId;

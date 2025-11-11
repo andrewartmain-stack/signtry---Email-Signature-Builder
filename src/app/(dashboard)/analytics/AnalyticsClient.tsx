@@ -27,10 +27,10 @@ import {
 import Signature from '../../components/Signature';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SavedSignatureDataInterface } from '../../types';
+import { SavedSignatureDataInterface, ClickAnalyticsDataInterface, LinkDataInterface } from '../../types';
 
 
-export default function Analytics({ savedSignatures, initialAnalyticsData, initialLinksData }: { savedSignatures: SavedSignatureDataInterface[], initialAnalyticsData: any[], initialLinksData: any[] }) {
+export default function Analytics({ savedSignatures, initialAnalyticsData, initialLinksData }: { savedSignatures: SavedSignatureDataInterface[], initialAnalyticsData: ClickAnalyticsDataInterface[], initialLinksData: LinkDataInterface[] }) {
 
     const [sigantures, setSignatures] = useState<SavedSignatureDataInterface[]>(savedSignatures)
     const [currentAnalyticsData, setCurrentAnalyticsData] = useState(initialAnalyticsData);

@@ -141,7 +141,7 @@ export function SettingsModal({ userProfile, isOpen, setIsOpen, fetchAuthenticat
                 <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
-                        Make changes to your profile here. Click save when you're done.
+                        Make changes to your profile here. Click save when you&apos;re done.
                     </DialogDescription>
                 </DialogHeader>
 

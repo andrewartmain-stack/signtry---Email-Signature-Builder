@@ -41,9 +41,9 @@ export default async function GenerateSignaturesPage() {
     .from('badges')
     .list('', { limit: 100, offset: 0 });
 
-  let badgeTemplates: string[] = [];
+  const badgeTemplates: string[] = [];
   if (!badgesError && badgeFiles) {
-    for (let file of badgeFiles) {
+    for (const file of badgeFiles) {
       const { data } = await supabase.storage
         .from('badges')
         .getPublicUrl(file.name);
@@ -58,9 +58,9 @@ export default async function GenerateSignaturesPage() {
     .from('social-icons')
     .list('', { limit: 100, offset: 0 });
 
-  let socialIcons: { name: string; png: string; gif: string }[] = [];
+  const socialIcons: { name: string; png: string; gif: string }[] = [];
   if (!socialError && socialFolders) {
-    for (let folder of socialFolders) {
+    for (const folder of socialFolders) {
       const { data: pngData } = await supabase.storage
         .from('social-icons')
         .getPublicUrl(`${folder.name}/${folder.name}.png`);

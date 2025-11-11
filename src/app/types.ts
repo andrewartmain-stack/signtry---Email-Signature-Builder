@@ -69,3 +69,19 @@ export interface FormUserDataInterface {
   signatureBorderRadius: string;
   signaturePadding: string;
 }
+
+export interface ClickAnalyticsDataInterface {
+  id: string;
+  signature_link_id: string;
+  signature_id: string;
+  clicked_at: Date;
+}
+
+export interface LinkDataInterface {
+  id: string;
+  signature_id: string;
+  link_key: string;
+  target_url: string;
+  created_at: Date;
+  token: string;
+}
