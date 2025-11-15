@@ -98,12 +98,12 @@ export default function PricingSection({ userId }: { userId: string }) {
                                     </div>
                                 )}
                             </div>
-                            <p className="text-gray-400">Perfect for individuals</p>
+                            <p className="text-gray-400">Perfect for individuals / small teams</p>
                         </div>
                         <ul className="space-y-4 mb-8">
                             <li className="flex items-center text-gray-900">
                                 <span className="text-blue-400 font-bold mr-3">✓</span>
-                                2 email signatures
+                                5 email signatures
                             </li>
                             <li className="flex items-center text-gray-900">
                                 <span className="text-blue-400 font-bold mr-3">✓</span>
