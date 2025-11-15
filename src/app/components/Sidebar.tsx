@@ -30,7 +30,7 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
         { href: "/signatures", icon: Package, label: "Signatures" },
         { href: "/analytics", icon: BarChart3, label: "Analytics" },
         { href: "/guides", icon: Video, label: "Guides" },
-        { href: "https://billing.stripe.com/p/login/test_fZu14m770dxhaWBaMGgnK00", icon: CircleDollarSign, label: "Manage Subscriptions" },
+        { href: "https://billing.stripe.com/p/login/cNi6oGeER2vo0NU1Ng93y00", icon: CircleDollarSign, label: "Manage Subscriptions" },
     ];
 
     const pathName = usePathname();
