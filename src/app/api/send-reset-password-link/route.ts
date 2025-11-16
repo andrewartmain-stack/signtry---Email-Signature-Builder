@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const email = body.email;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${req.nextUrl.origin}/reset`,
+      redirectTo: 'https://app.signtry.com//reset',
     });
 
     if (error) {
