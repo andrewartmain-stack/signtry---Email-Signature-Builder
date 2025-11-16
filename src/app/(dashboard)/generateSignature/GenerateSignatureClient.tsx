@@ -73,12 +73,21 @@ export default function GenerateSignaturesClient({ demoUserData, templates, badg
     async function handleSaveSignature() {
         if (formUserData) {
             setIsLoading(true);
-            await saveSignature(formUserData, currentHtmlSignature, bucketName);
-            setIsLoading(false);
-            handleShow("success", "Signature saved successfully!");
-        }
+            const response = await saveSignature(formUserData, currentHtmlSignature, bucketName);
 
-        if (saveSignatureButtonRef.current) handleConfetti(saveSignatureButtonRef.current)
+            if (response?.ok) {
+                const responseData = await response?.json();
+                setIsLoading(false);
+                handleShow("success", responseData.message);
+
+                if (saveSignatureButtonRef.current) handleConfetti(saveSignatureButtonRef.current)
+
+            } else {
+                const responseData = await response?.json();
+                setIsLoading(false);
+                handleShow("error", responseData.message);
+            }
+        }
     }
 
     useEffect(() => {

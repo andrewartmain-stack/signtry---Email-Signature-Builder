@@ -11,10 +11,10 @@ export default function ClientLayoutWrapper({
     initialUserData
 }: {
     children: React.ReactNode;
-    initialUserData: { id: string, fullName: string, avatarUrl: string | null, email: string }
+    initialUserData: { id: string, fullName: string, avatarUrl: string | null, email: string, plan: string }
 }) {
 
-    const [userData, setUserData] = useState<{ id: string, fullName: string, avatarUrl: string | null, email: string } | null>(initialUserData);
+    const [userData, setUserData] = useState<{ id: string, fullName: string, avatarUrl: string | null, email: string, plan: string } | null>(initialUserData);
 
 
     const fetchAuthenticatedUserData = async () => {
@@ -36,7 +36,7 @@ export default function ClientLayoutWrapper({
             // email = profileData?.email as string;
             avatarUrl = profileData?.avatar_url as string | null;
 
-            setUserData({ id: initialUserData.id, fullName, avatarUrl, email: initialUserData.email })
+            setUserData({ id: initialUserData.id, fullName, avatarUrl, email: initialUserData.email, plan: initialUserData.plan })
         }
     }
 

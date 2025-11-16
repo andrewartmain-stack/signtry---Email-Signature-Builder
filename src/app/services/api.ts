@@ -43,7 +43,7 @@ export async function saveSignature(
 
       const companyLogoUrl = await companyLogoUrlResponse?.json();
 
-      await fetch('/api/save-signature', {
+      const response = await fetch('/api/save-signature', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export async function saveSignature(
         }),
       });
 
-      return true;
+      return response;
     }
   } catch (error) {
     if (error instanceof Error) {

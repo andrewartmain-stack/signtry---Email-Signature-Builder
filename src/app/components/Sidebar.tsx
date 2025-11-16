@@ -21,7 +21,7 @@ import {
 import avatar from "../../../public/avatar.png"
 import { SettingsModal } from './SettingsModal';
 
-const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string | null, email: string } | null, fetchAuthenticatedUserData: () => void }> = ({ userData, fetchAuthenticatedUserData }) => {
+const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string | null, email: string, plan: string } | null, fetchAuthenticatedUserData: () => void }> = ({ userData, fetchAuthenticatedUserData }) => {
 
     const [isSettignsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
@@ -94,7 +94,7 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
                         <Avatar src={userData?.avatarUrl ? userData.avatarUrl : avatar.src} />
                         <div className="flex flex-col">
                             <span className="text-sm font-semibold text-slate-800">{userData?.fullName}</span>
-                            <Marker>trial</Marker>
+                            <Marker>{userData?.plan}</Marker>
                         </div>
                     </div>
 
