@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '../../utils/supabase/server'
 import Title from '../../components/Title';
+import EmailGuidesTabs from '../../components/EmailGuidesTabs';
 
 export default async function Guides() {
 
@@ -22,10 +23,19 @@ export default async function Guides() {
         redirect('/subscription-plan');
     }
 
-
     return (
-        <div className="p-10 flex w-full justify-between">
-            <Title text="Guides" tag="h2" />
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="container mx-auto px-4">
+                <div className="mb-8">
+                    <Title text="Setup Guides" tag="h2" />
+                    <p className="text-gray-600 mt-2 max-w-3xl">
+                        Step-by-step instructions for setting up your email signature across different providers.
+                        First, copy your signature from the Signatures tab, then follow the guide for your email provider.
+                    </p>
+                </div>
+
+                <EmailGuidesTabs />
+            </div>
         </div>
     )
 }

@@ -8,6 +8,8 @@ import Stripe from 'stripe';
 const STRIPE_SIGNING_SECRET = process.env.STRIPE_SIGNING_SECRET!;
 
 export async function POST(req: NextRequest) {
+  console.log('RENDER!!!!!!!!!');
+
   try {
     const body = await req.text();
     const signature = (await headers()).get('Stripe-Signature');
