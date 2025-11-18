@@ -276,13 +276,13 @@ export default function Analytics({ savedSignatures, initialAnalyticsData, initi
                 {sigantures.length ? sigantures.map((signature) => (
                     <div
                         key={signature.id}
-                        className={`${selectedSignatureId === signature.id ? "bg-blue-100" : "bg-white"} w-40 h-30 rounded-md border-gray-400 border-1 hover:bg-blue-50 transition cursor-pointer p-4`} onClick={() => {
+                        className={`${selectedSignatureId === signature.id ? "border-blue-400" : "border-gray-400"} bg-white w-40 h-30 rounded-md border-2 hover:border-blue-200 transition cursor-pointer p-4`} onClick={() => {
                             setSelectedSignatureId(signature.id);
                             setCurrentSignatureMonthlyGoal(Number(signature.monthly_goal));
                             fetchSignatureAnalyticsDetails(signature.id);
                         }}
                     >
-                        <div className="scrollable w-full h-full pr-2">
+                        <div className="w-full h-full pr-2 overflow-hidden">
                             <div className="w-[500px] h-[500px]">
                                 <Signature
                                     className="pointer-events-none scale-50 origin-top-left"
