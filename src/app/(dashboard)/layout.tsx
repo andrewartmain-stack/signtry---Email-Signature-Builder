@@ -39,13 +39,16 @@ export default async function DashboardLayout({
       plan = "Basic" as string;
       break;
     case process.env.NEXT_PUBLIC_PRICE_ID_BASIC_YEARLY:
-      plan = "Basic" as string;;
+      plan = "Basic" as string;
       break;
     case process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_MONTHLY:
-      plan = "Professional" as string;;
+      plan = "Professional" as string;
       break;
     case process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_YEARLY:
-      plan = "Professional" as string;;
+      plan = "Professional" as string;
+      break;
+    case "unlimited_edition_for_admin_only":
+      plan = "Admin" as string;
       break;
   }
 
