@@ -276,7 +276,7 @@ export default function Analytics({ savedSignatures, initialAnalyticsData, initi
                 {sigantures.length ? sigantures.map((signature) => (
                     <div
                         key={signature.id}
-                        className={`${selectedSignatureId === signature.id ? "border-blue-400" : "border-gray-400"} bg-white w-40 h-30 rounded-md border-2 hover:border-blue-200 transition cursor-pointer p-4`} onClick={() => {
+                        className={`${selectedSignatureId === signature.id ? "border-blue-400" : "border-gray-400"} bg-white w-40 h-30 rounded-md border-1 hover:border-blue-200 transition cursor-pointer p-4`} onClick={() => {
                             setSelectedSignatureId(signature.id);
                             setCurrentSignatureMonthlyGoal(Number(signature.monthly_goal));
                             fetchSignatureAnalyticsDetails(signature.id);
@@ -301,11 +301,69 @@ export default function Analytics({ savedSignatures, initialAnalyticsData, initi
                 </motion.p>}
             </motion.div>
 
-            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-                    <motion.div variants={itemVariants}>
-                        <div className="flex flex-col gap-4">
-                            <Card className="h-full">
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+            >
+                <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Основной контент - графики */}
+                    <div className="flex-1">
+                        <div className="grid grid-cols-1 gap-6">
+                            <motion.div variants={itemVariants}>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Clicks Last 6 Months</CardTitle>
+                                        <MousePointerClick className="h-5 w-5 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
+                                            <BarChart accessibilityLayer data={getMonthlyClicksData()}>
+                                                <XAxis
+                                                    dataKey="month"
+                                                    tickLine={false}
+                                                    tickMargin={10}
+                                                    axisLine={false}
+                                                    tickFormatter={(value) => value.slice(0, 3)}
+                                                />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
+                                            </BarChart>
+                                        </ChartContainer>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+
+                            <motion.div variants={itemVariants}>
+                                <Card>
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-sm font-medium">Clicks Last 7 Days</CardTitle>
+                                        <MousePointerClick className="h-5 w-5 text-muted-foreground" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <ChartContainer config={chartConfig2} className="max-h-[200px] w-full">
+                                            <BarChart accessibilityLayer data={getLast7DaysClicksData()}>
+                                                <XAxis
+                                                    dataKey="day"
+                                                    tickLine={false}
+                                                    tickMargin={10}
+                                                    axisLine={false}
+                                                    tickFormatter={(value) => value.slice(0, 3)}
+                                                />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
+                                            </BarChart>
+                                        </ChartContainer>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </div>
+                    </div>
+
+                    {/* Боковая панель с метриками */}
+                    <div className="w-full lg:w-80 space-y-6">
+                        <motion.div variants={itemVariants}>
+                            <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Clicks (last month)</CardTitle>
                                     <MousePointerClick className="h-5 w-5 text-muted-foreground" />
@@ -314,109 +372,80 @@ export default function Analytics({ savedSignatures, initialAnalyticsData, initi
                                     <div className="text-2xl font-bold">{getClicksLastMonth().length}</div>
                                 </CardContent>
                             </Card>
-                            <Card className="h-full">
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                            <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Clicks (this month)</CardTitle>
                                     <MousePointerClick className="h-5 w-5 text-muted-foreground" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{getClicksThisMonth().length}</div>
-                                    <p className="text-xs text-muted-foreground">{getDifferenceBetweenLastAndCurrentMonthClicks()} from last month</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {getDifferenceBetweenLastAndCurrentMonthClicks()} from last month
+                                    </p>
                                 </CardContent>
                             </Card>
-                        </div>
-                    </motion.div>
-                    <motion.div variants={itemVariants}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Monthly Goal</CardTitle>
-                                <Target className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{currentSignatureMonthlyGoal}</div>
-                                <p className="text-xs text-muted-foreground">Progress: {progressValue || 0}%</p>
-                                <Progress value={progressValue} className="mt-2 h-2 mb-4" />
-                                <div className="flex gap-2 items-center">
-                                    <Button variant="outline" size="sm" className="cursor-pointer" onClick={handleUpdateMonthlyGoal}>{isEditable ? "save" : "edit goal"}</Button>
-                                    {isEditable && <Input type="number" value={newGoal ? newGoal.toString() : ""} onChange={(e) => setNewGoal(Number(e.target.value))} />}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={itemVariants}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Clicked Links</CardTitle>
-                                <Link2Icon className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                {linksData.length > 0 ? <ul className="flex flex-col gap-2">{linksData.map(link => <li className="flex items-center justify-between w-full" key={link.id}>
-                                    <div className="flex items-center gap-2">
-                                        {getLinkIcon(link.link_key)}
-                                        <span className="text-xs leading-none">
-                                            {link.link_key}
-                                        </span>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Monthly Goal</CardTitle>
+                                    <Target className="h-5 w-5 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{currentSignatureMonthlyGoal}</div>
+                                    <p className="text-xs text-muted-foreground">Progress: {progressValue || 0}%</p>
+                                    <Progress value={progressValue} className="mt-2 h-2 mb-4" />
+                                    <div className="flex gap-2 items-center">
+                                        <Button variant="outline" size="sm" className="cursor-pointer" onClick={handleUpdateMonthlyGoal}>
+                                            {isEditable ? "save" : "edit goal"}
+                                        </Button>
+                                        {isEditable && (
+                                            <Input
+                                                type="number"
+                                                value={newGoal ? newGoal.toString() : ""}
+                                                onChange={(e) => setNewGoal(Number(e.target.value))}
+                                            />
+                                        )}
                                     </div>
-                                    <span className="text-xs font-bold leading-none">
-                                        {getClicksForLink(link.id).length}
-                                    </span>
-                                </li>)}</ul> : <p className="text-xs text-muted-foreground">No links inside signature</p>}
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </div>
-            </motion.div>
-            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-                    <motion.div variants={itemVariants}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Clicks Last 6 month</CardTitle>
-                                <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
-                                    <BarChart accessibilityLayer data={getMonthlyClicksData()}>
-                                        <XAxis
-                                            dataKey="month"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            tickFormatter={(value) => value.slice(0, 3)}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                    <motion.div variants={itemVariants}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Clicks Last 7 Days</CardTitle>
-                                <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig2} className="max-h-[200px] w-full">
-                                    <BarChart accessibilityLayer data={getLast7DaysClicksData()}>
-                                        <XAxis
-                                            dataKey="day"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            tickFormatter={(value) => value.slice(0, 3)}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
 
-
+                        <motion.div variants={itemVariants}>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Clicked Links</CardTitle>
+                                    <Link2Icon className="h-5 w-5 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    {linksData.length > 0 ? (
+                                        <ul className="space-y-3">
+                                            {linksData.map(link => (
+                                                <li className="flex items-center justify-between w-full" key={link.id}>
+                                                    <div className="flex items-center gap-2">
+                                                        {getLinkIcon(link.link_key)}
+                                                        <span className="text-xs leading-none">
+                                                            {link.link_key}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-bold leading-none">
+                                                        {getClicksForLink(link.id).length}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">No links inside signature</p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </div>
+                </div>
             </motion.div>
         </div>
     );

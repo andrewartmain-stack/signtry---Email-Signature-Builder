@@ -222,7 +222,7 @@ export default function GenerateSignaturesClient({ demoUserData, templates, badg
                 <Title highlightedText="1. Select" text="Template" tag="h2" />
                 <div className="flex items-center gap-3">
                     <Title text="Category:" tag="h5" />
-                    <Button size="sm" className={`cursor-pointer ${currentTemplatesCategory === "horizontal" ? "bg-blue-400" : "bg-black"}`} onClick={() => setCurrentTemplateCategory("horizontal")}>
+                    <Button size="sm" className={`cursor-pointer ${currentTemplatesCategory === "horizontal" ? "bg-[linear-gradient(135deg,#6fb3ff,#b3d9ff)]" : "bg-black"}`} onClick={() => setCurrentTemplateCategory("horizontal")}>
                         Horizontal
                         {currentTemplatesCategory === "horizontal" && (
                             <svg
@@ -236,7 +236,7 @@ export default function GenerateSignaturesClient({ demoUserData, templates, badg
                             </svg>
                         )}
                     </Button>
-                    <Button size="sm" className={`cursor-pointer ${currentTemplatesCategory === "vertical" ? "bg-blue-400" : "bg-black"}`} onClick={() => setCurrentTemplateCategory("vertical")}>
+                    <Button size="sm" className={`cursor-pointer ${currentTemplatesCategory === "vertical" ? "bg-[linear-gradient(135deg,#6fb3ff,#b3d9ff)]" : "bg-black"}`} onClick={() => setCurrentTemplateCategory("vertical")}>
                         Vertical
                         {currentTemplatesCategory === "vertical" && (
                             <svg

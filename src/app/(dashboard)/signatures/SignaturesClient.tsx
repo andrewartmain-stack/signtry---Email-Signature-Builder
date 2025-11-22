@@ -172,7 +172,7 @@ export default function Signatures({ initialSignatures }: { initialSignatures: S
                                     duration: 0.3,       // smooth and complete
                                     ease: "easeInOut",   // no abrupt spring
                                 }}
-                                className="relative bg-white w-58 h-36 shadow-md rounded-md border border-gray-200 hover:shadow-lg hover:scale-[1.03] transition-transform duration-200 cursor-pointer p-3"
+                                className="relative bg-white w-52 h-36 shadow-md rounded-md border border-gray-200 hover:shadow-lg hover:scale-[1.03] transition-transform duration-200 cursor-pointer p-3"
                             >
                                 {/* Buttons stay fixed to card corners */}
                                 <div className="absolute flex flex-col gap-2 top-1 right-1 z-10">

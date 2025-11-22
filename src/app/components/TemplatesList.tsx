@@ -10,22 +10,24 @@ const TemplatesList: FC<{ templates: SignatureTemplateInterface[], currentTempla
 
 
     return (
-        <div className="w-full flex gap-3 flex-wrap">
-            {templates.map((template) => {
-                if (template.alignment === currentTemplatesCategory) {
-                    const signatureHtml = renderSignature(template.html, { ...demoUserData });
+        <div className="w-full scrollable-x">
+            <div className='flex gap-3 w-max'>
+                {templates.map((template) => {
+                    if (template.alignment === currentTemplatesCategory) {
+                        const signatureHtml = renderSignature(template.html, { ...demoUserData });
 
-                    return (
-                        <div
-                            key={template.id}
-                            className="cursor-pointer rounded-sm shadow-md hover:shadow-xl bg-white p-2 transition-transform hover:-translate-y-1 border-1 border-gray-400"
-                            onClick={() => handleSetCurrentHtmlSignature(template.html)}
-                        >
-                            <Signature html={signatureHtml} />
-                        </div>
-                    );
-                }
-            })}
+                        return (
+                            <div
+                                key={template.id}
+                                className="cursor-pointer rounded-sm shadow-md bg-white p-2 transition-transform border-1 border-gray-400"
+                                onClick={() => handleSetCurrentHtmlSignature(template.html)}
+                            >
+                                <Signature html={signatureHtml} />
+                            </div>
+                        );
+                    }
+                })}
+            </div>
         </div>
 
     )

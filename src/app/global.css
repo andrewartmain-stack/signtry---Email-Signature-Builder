@@ -141,6 +141,7 @@
 
 body {
   overflow: hidden;
+  font-family: var(--font-brittisanstrial);
 }
 
 /* Hide scrollbar but still scrollable */

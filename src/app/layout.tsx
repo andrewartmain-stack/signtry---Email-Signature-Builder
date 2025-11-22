@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { brittiSansTrial } from "./fonts";
 import "./global.css";
-
-const poppinsSans = Poppins({
-    weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-    subsets: ["latin"]
-});
 
 export const metadata: Metadata = {
     title: "Dashboard - SignTry",
@@ -25,7 +20,7 @@ export default function RootLayout({
     return (
         <html lang="en" className="h-full">
             <body
-                className={`${poppinsSans.className} h-full antialiased`}
+                className={`${brittiSansTrial.variable} h-full antialiased`}
             >
                 <main className="absolute inset-0 w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
                     {children}
