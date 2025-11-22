@@ -6,9 +6,9 @@ export const metadata: Metadata = {
     title: "Dashboard - SignTry",
     description: "Manage signatures, track clicks, and view real-time analytics in one place.",
     icons: {
-        icon: "/icon.svg",
-        shortcut: "/icon.svg",
-        apple: "/icon.svg",
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+        apple: "/favicon.ico",
     }
 };
 
