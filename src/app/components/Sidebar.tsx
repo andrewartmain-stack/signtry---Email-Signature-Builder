@@ -66,11 +66,11 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
                                         <Link
                                             href={link.href}
                                             className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 group ${isActive
-                                                ? 'bg-[linear-gradient(135deg,rgba(99,102,241,0.6),rgba(139,92,246,0.3),rgb(174,209,255),rgba(174,209,255,0))] text-white shadow-sm'
+                                                ? 'bg-[#dee7ff] text-black border-black border-[1px]'
                                                 : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                                                 }`}
                                         >
-                                            <Icon className={`h-5 w-5 transition-colors ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-800'}`} />
+                                            <Icon className={`h-5 w-5 transition-colors ${isActive ? 'text-black' : 'text-slate-500 group-hover:text-slate-800'}`} />
                                             <span>{link.label}</span>
                                         </Link>
                                     </li>
