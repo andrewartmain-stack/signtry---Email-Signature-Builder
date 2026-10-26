@@ -1,454 +1,351 @@
 "use client"
 
-import React, { useState } from 'react';
-import { motion, Variants } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import Title from '../../components/Title';
-import { Bar, BarChart, XAxis } from "recharts";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-    MousePointerClick, Target, Link2Icon, Facebook,
+    Facebook,
     Instagram,
     Linkedin,
     Globe,
     Music,
-    Bird,
+    Twitter,
     MessageCircle,
-    Play,
+    Youtube,
     Mail,
     Github,
-    RectangleHorizontalIcon,
-    Image,
-    Square,
-    Circle,
-    Phone
+    RectangleHorizontal,
+    Image as ImageIcon,
+    MousePointerClick,
+    Phone,
+    Pencil,
+    Plus,
 } from 'lucide-react';
-import Signature from '../../components/Signature';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import PageHeader from '../../components/PageHeader';
+import ScaledSignature from '../../components/ScaledSignature';
+import { useToast } from '../../components/Toast';
+
+import { getSignatureTextLines } from '../../utils/copySignature';
+
 import { SavedSignatureDataInterface, ClickAnalyticsDataInterface, LinkDataInterface } from '../../types';
 
+const LINK_LABELS: Record<string, string> = {
+    email: 'Email', phone: 'Phone', photo: 'Photo', banner: 'Banner',
+    button_1: 'Button 1', button_2: 'Button 2',
+    linkedin: 'LinkedIn', x: 'X (Twitter)', twitter: 'X (Twitter)', facebook: 'Facebook', instagram: 'Instagram',
+    whatsapp: 'WhatsApp', youtube: 'YouTube', tiktok: 'TikTok', github: 'GitHub', website: 'Website', site: 'Website link',
+};
 
-export default function Analytics({ savedSignatures, initialAnalyticsData, initialLinksData }: { savedSignatures: SavedSignatureDataInterface[], initialAnalyticsData: ClickAnalyticsDataInterface[], initialLinksData: LinkDataInterface[] }) {
+function getLinkIcon(linkName: string) {
+    const className = "size-4 text-muted-foreground";
+    switch (linkName.toLowerCase()) {
+        case "email": return <Mail className={className} />;
+        case "phone": return <Phone className={className} />;
+        case "github": return <Github className={className} />;
+        case "tiktok": return <Music className={className} />;
+        case "facebook": return <Facebook className={className} />;
+        case "instagram": return <Instagram className={className} />;
+        case "x":
+        case "twitter": return <Twitter className={className} />;
+        case "linkedin": return <Linkedin className={className} />;
+        case "whatsapp": return <MessageCircle className={className} />;
+        case "youtube": return <Youtube className={className} />;
+        case "banner": return <RectangleHorizontal className={className} />;
+        case "photo": return <ImageIcon className={className} />;
+        case "button_1":
+        case "button_2": return <MousePointerClick className={className} />;
+        default: return <Globe className={className} />;
+    }
+}
 
-    const [sigantures, setSignatures] = useState<SavedSignatureDataInterface[]>(savedSignatures)
-    const [currentAnalyticsData, setCurrentAnalyticsData] = useState(initialAnalyticsData);
+function isSameUtcMonth(date: Date, year: number, month: number) {
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month;
+}
+
+// Single series, so one color and no legend; the card title names it
+const chartConfig = {
+    clicks: { label: "Clicks", color: "var(--action)" },
+} satisfies ChartConfig
+
+const ClicksChart = ({ data, dataKey }: { data: { clicks: number }[], dataKey: string }) => (
+    <ChartContainer config={chartConfig} className="h-[220px] w-full">
+        <BarChart accessibilityLayer data={data} margin={{ top: 8, right: 0, left: -12, bottom: 0 }}>
+            <CartesianGrid vertical={false} stroke="var(--line)" />
+            <XAxis dataKey={dataKey} tickLine={false} axisLine={false} tickMargin={10} />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+            <ChartTooltip cursor={{ fill: 'rgba(6,27,49,0.04)' }} content={<ChartTooltipContent />} />
+            <Bar dataKey="clicks" fill="var(--color-clicks)" radius={[4, 4, 0, 0]} maxBarSize={24} isAnimationActive={false} />
+        </BarChart>
+    </ChartContainer>
+)
+
+export default function Analytics({ savedSignatures, initialSignatureId, initialAnalyticsData, initialLinksData }: { savedSignatures: SavedSignatureDataInterface[], initialSignatureId: number | null, initialAnalyticsData: ClickAnalyticsDataInterface[], initialLinksData: LinkDataInterface[] }) {
+
+    const [signatures, setSignatures] = useState<SavedSignatureDataInterface[]>(savedSignatures)
+    const [clicks, setClicks] = useState(initialAnalyticsData);
     const [linksData, setLinksData] = useState(initialLinksData)
-    const [selectedSignatureId, setSelectedSignatureId] = useState(savedSignatures.length ? savedSignatures[0].id : "");
-    const [currentSignatureMonthlyGoal, setCurrentSignatureMonthlyGoal] = useState<number>(savedSignatures.length ? Number(savedSignatures[0].monthly_goal) : 0);
-    const [isEditable, setIsEditable] = useState<boolean>(false);
-    const [newGoal, setNewGoal] = useState<null | number>(null);
+    const [selectedSignatureId, setSelectedSignatureId] = useState<number | null>(initialSignatureId);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isEditingGoal, setIsEditingGoal] = useState(false);
+    const [goalDraft, setGoalDraft] = useState('');
+    const [isSavingGoal, setIsSavingGoal] = useState(false);
 
-    const fetchSignatureAnalyticsDetails = async (id: number) => {
-        const responseClicks = await fetch(`/api/get-signature-clicks-analytics?id=${id}`, {
-            method: "GET",
-        });
+    const toast = useToast();
 
-        const responseLinks = await fetch(`/api/get-signature-links-analytics?id=${id}`, {
-            method: "GET",
-        });
+    const selectedSignature = signatures.find(signature => signature.id === selectedSignatureId) ?? null;
+    const monthlyGoal = Number(selectedSignature?.monthly_goal) || 0;
 
-        if (responseClicks.ok) {
-            const { data } = await responseClicks.json();
-            setCurrentAnalyticsData(data);
-        }
+    const signatureLabels = useMemo(
+        () => new Map(signatures.map(signature => {
+            const lines = getSignatureTextLines(signature.html);
+            return [signature.id, [lines[0], lines[1]].filter(Boolean).join(' · ') || `Signature #${signature.id}`];
+        })),
+        [signatures]
+    );
 
-        if (responseLinks.ok) {
-            const { data } = await responseLinks.json();
-            setLinksData(data);
+    async function selectSignature(id: number) {
+        setSelectedSignatureId(id);
+        setIsEditingGoal(false);
+        setIsLoading(true);
+
+        try {
+            const [responseClicks, responseLinks] = await Promise.all([
+                fetch(`/api/get-signature-clicks-analytics?id=${id}`),
+                fetch(`/api/get-signature-links-analytics?id=${id}`),
+            ]);
+
+            if (!responseClicks.ok || !responseLinks.ok) throw new Error('Could not load analytics');
+
+            setClicks((await responseClicks.json()).data ?? []);
+            setLinksData((await responseLinks.json()).data ?? []);
+        } catch (error) {
+            toast('error', error instanceof Error ? error.message : 'Could not load analytics');
+        } finally {
+            setIsLoading(false);
         }
     }
 
-    const fetchSignatures = async () => {
-        const responseFetchSignatures = await fetch('/api/get-saved-signatures', {
-            method: "GET",
-        });
-
-        if (responseFetchSignatures.ok) {
-            const { signatures } = await responseFetchSignatures.json();
-            setSignatures(signatures);
-        }
-    }
-
-    const getClicksThisMonth = () => {
-        const clicksThisMonth = currentAnalyticsData.filter(click => {
-            const clickDate = new Date(click.clicked_at);
-            const now = new Date();
-
-            return (
-                clickDate.getUTCFullYear() === now.getUTCFullYear() &&
-                clickDate.getUTCMonth() === now.getUTCMonth()
-            );
-        });
-
-        return clicksThisMonth
-    }
-
-    const getClicksLastMonth = () => {
-        const clicksLastMonth = currentAnalyticsData.filter(click => {
-            const clickDate = new Date(click.clicked_at);
-            const now = new Date();
-
-            // Determine last month and year (handle January correctly)
-            const lastMonth = now.getUTCMonth() === 0 ? 11 : now.getUTCMonth() - 1;
-            const lastMonthYear = now.getUTCMonth() === 0 ? now.getUTCFullYear() - 1 : now.getUTCFullYear();
-
-            return (
-                clickDate.getUTCFullYear() === lastMonthYear &&
-                clickDate.getUTCMonth() === lastMonth
-            );
-        });
-
-        return clicksLastMonth;
-    };
-
-    const getLast7DaysClicksData = () => {
+    const stats = useMemo(() => {
         const now = new Date();
+        const year = now.getUTCFullYear();
+        const month = now.getUTCMonth();
+        const lastMonth = month === 0 ? 11 : month - 1;
+        const lastMonthYear = month === 0 ? year - 1 : year;
 
-        return Array.from({ length: 7 }).map((_, i) => {
-            // i = 0 → 6 days ago, i = 6 → today
-            const date = new Date(now);
-            date.setUTCDate(now.getUTCDate() - (6 - i)); // last 7 days
+        const dates = clicks.map(click => new Date(click.clicked_at));
+        const thisMonth = dates.filter(date => isSameUtcMonth(date, year, month)).length;
+        const previousMonth = dates.filter(date => isSameUtcMonth(date, lastMonthYear, lastMonth)).length;
 
-            const label = date.toLocaleDateString("en-US", { weekday: "short" });
-
-            const count = currentAnalyticsData.filter((click) => {
-                const clickDate = new Date(click.clicked_at);
-                return (
-                    clickDate.getUTCFullYear() === date.getUTCFullYear() &&
-                    clickDate.getUTCMonth() === date.getUTCMonth() &&
-                    clickDate.getUTCDate() === date.getUTCDate()
-                );
-            }).length;
-
-            return { day: label, clicks: count };
-        });
-    };
-
-    const getMonthlyClicksData = () => {
-        const now = new Date();
-        const data = [];
-
-        for (let i = 5; i >= 0; i--) {
-            const month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-            const monthName = month.toLocaleString('en-US', { month: 'short' });
-            const count = currentAnalyticsData.filter(click => {
-                const clickDate = new Date(click.clicked_at);
-                return (
-                    clickDate.getUTCFullYear() === month.getUTCFullYear() &&
-                    clickDate.getUTCMonth() === month.getUTCMonth()
-                );
-            }).length;
-
-            data.push({ month: monthName, clicks: count });
-        }
-
-        return data;
-    };
-
-    const editMonthlyGoal = async (goal: number) => {
-        const responseUpdateGoal = await fetch(`/api/update-signature-monthly-goal?id=${selectedSignatureId}`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                goal: goal
-            })
+        const monthly = Array.from({ length: 6 }, (_, i) => {
+            const start = new Date(Date.UTC(year, month - (5 - i), 1));
+            return {
+                month: start.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+                clicks: dates.filter(date => isSameUtcMonth(date, start.getUTCFullYear(), start.getUTCMonth())).length,
+            };
         });
 
-        if (responseUpdateGoal.ok) {
-            const { data } = await responseUpdateGoal.json();
-            setCurrentSignatureMonthlyGoal(data);
+        const daily = Array.from({ length: 7 }, (_, i) => {
+            const day = new Date(now);
+            day.setUTCDate(now.getUTCDate() - (6 - i));
+            return {
+                day: day.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
+                clicks: dates.filter(date =>
+                    isSameUtcMonth(date, day.getUTCFullYear(), day.getUTCMonth()) && date.getUTCDate() === day.getUTCDate()
+                ).length,
+            };
+        });
+
+        let change = '';
+        if (previousMonth > 0) {
+            const difference = ((thisMonth - previousMonth) / previousMonth) * 100;
+            change = `${difference > 0 ? '+' : difference < 0 ? '−' : ''}${Math.abs(difference).toFixed(0)}% vs last month`;
+        } else if (thisMonth > 0) {
+            change = 'No clicks last month';
+        }
+
+        const clicksByLink = new Map<string, number>();
+        clicks.forEach(click => clicksByLink.set(click.signature_link_id, (clicksByLink.get(click.signature_link_id) ?? 0) + 1));
+
+        return { thisMonth, previousMonth, total: clicks.length, monthly, daily, change, clicksByLink };
+    }, [clicks]);
+
+    const links = useMemo(
+        () => linksData
+            .map(link => ({ ...link, clicks: stats.clicksByLink.get(link.id) ?? 0 }))
+            .sort((a, b) => b.clicks - a.clicks),
+        [linksData, stats.clicksByLink]
+    );
+    const maxLinkClicks = Math.max(1, ...links.map(link => link.clicks));
+
+    // A monthly goal is measured against this month's clicks, not all-time clicks
+    const progressValue = monthlyGoal > 0 ? Math.min(Math.round(stats.thisMonth / monthlyGoal * 100), 100) : 0;
+
+    async function handleSaveGoal() {
+        const goal = Math.round(Number(goalDraft));
+        if (!selectedSignatureId || !Number.isFinite(goal) || goal <= 0) {
+            toast('error', 'Enter a goal of at least 1 click');
+            return;
+        }
+
+        setIsSavingGoal(true);
+        try {
+            const response = await fetch(`/api/update-signature-monthly-goal?id=${selectedSignatureId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ goal }),
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.message || 'Could not update goal');
+
+            setSignatures(current => current.map(signature =>
+                signature.id === selectedSignatureId ? { ...signature, monthly_goal: String(result.data) } : signature
+            ));
+            setIsEditingGoal(false);
+            toast('success', 'Monthly goal updated');
+        } catch (error) {
+            toast('error', error instanceof Error ? error.message : 'Could not update goal');
+        } finally {
+            setIsSavingGoal(false);
         }
     }
 
-    const handleUpdateMonthlyGoal = async () => {
-        setIsEditable(!isEditable);
-        if (isEditable && newGoal && newGoal > 0) {
-            await editMonthlyGoal(newGoal);
-            await fetchSignatures();
-        }
+    if (signatures.length === 0) {
+        return (
+            <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-8 md:py-10">
+                <PageHeader tag="Analytics" title="Link clicks" description="See which links in your signature people click." />
+                <div className="flex flex-col items-center gap-4 rounded-3xl bg-stage-recaps px-6 py-16 text-center">
+                    <h2 className="text-2xl text-ink">Nothing to measure yet</h2>
+                    <p className="max-w-sm text-sm text-ink/75">Every link in a saved signature is tracked. Save your first signature to start seeing clicks.</p>
+                    <Button size="lg" asChild>
+                        <Link href="/generateSignature"><Plus /> Create a signature</Link>
+                    </Button>
+                </div>
+            </div>
+        )
     }
-
-    const getClicksForLink = (linkId: string) => {
-        return currentAnalyticsData.filter(click => click.signature_link_id === linkId);
-    }
-
-    const getLinkIcon = (linkName: string) => {
-        switch (linkName.toLowerCase()) {
-            case "email":
-                return <Mail color="#ae2fce" className="h-4 w-4" />;
-            case "phone":
-                return <Phone color="#2fce5f" className="h-4 w-4" />;
-            case "github":
-                return <Github color="#333333" className="h-4 w-4" />;
-            case "tiktok":
-                return <Music color="#010101" className="h-4 w-4" />;
-            case "facebook":
-                return <Facebook color="#1877F2" className="h-4 w-4" />;
-            case "instagram":
-                return <Instagram color="#E1306C" className="h-4 w-4" />;
-            case "x":
-            case "twitter":
-                return <Bird color="#000000" className="h-4 w-4" />;
-            case "linkedin":
-                return <Linkedin color="#0A66C2" className="h-4 w-4" />;
-            case "website":
-                return <Globe color="#6B7280" className="h-4 w-4" />;
-            case "whatsapp":
-                return <MessageCircle color="#25D366" className="h-4 w-4" />;
-            case "youtube":
-                return <Play color="#FF0000" className="h-4 w-4" />;
-            case "banner":
-                return <RectangleHorizontalIcon color="#F59E0B" className="h-4 w-4" />;
-            case "photo":
-                return <Image color="#10B981" className="h-4 w-4" />; // green photo icon
-            case "button_1":
-                return <Square color="#6366F1" className="h-4 w-4" />; // purple square as button_1
-            case "button_2":
-                return <Circle color="#F59E0B" className="h-4 w-4" />; // amber circle as button_2
-            default:
-                return <Globe color="#9CA3AF" className="h-4 w-4" />; // fallback
-        }
-    };
-
-
-
-    const getDifferenceBetweenLastAndCurrentMonthClicks = (): string => {
-        const lastMonthClicks: number = getClicksLastMonth().length;
-        const thisMonthClicks: number = getClicksThisMonth().length;
-
-        if (lastMonthClicks === 0 && thisMonthClicks === 0) {
-            return "0%";
-        }
-
-        if (lastMonthClicks === 0 && thisMonthClicks > 0) {
-            return "+100%";
-        }
-
-        const difference = ((thisMonthClicks - lastMonthClicks) / lastMonthClicks) * 100;
-
-        const sign = difference > 0 ? "+" : difference < 0 ? "−" : "";
-        const formatted = `${sign}${Math.abs(difference).toFixed(1)}%`;
-
-        return formatted;
-    };
-
-    const progressValue = Number((currentAnalyticsData.length / currentSignatureMonthlyGoal * 100).toFixed(3));
-
-    const chartConfig = {
-        desktop: {
-            label: "Desktop",
-            color: "#60a5fa",
-        }
-    } satisfies ChartConfig
-
-    const chartConfig2 = {
-        desktop: {
-            label: "Desktop",
-            color: "#b5d6ff",
-        }
-    } satisfies ChartConfig
-
-    const itemVariants: Variants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } },
-    };
 
     return (
-        <div className="relative p-6 md:p-8 flex flex-col w-full gap-8 overflow-y-auto">
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <Title text="Analytics" highlightedText="Signature" tag="h2" />
-                    <p className="text-gray-500 mt-1 text-sm">
-                        Detailed click report for your selected signature.
-                    </p>
-                </div>
-            </motion.div>
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-8 md:py-10">
+            <PageHeader
+                tag="Analytics"
+                title="Link clicks"
+                description="Clicks on the links in your signature, counted in UTC."
+                actions={
+                    <Select value={selectedSignatureId ? String(selectedSignatureId) : undefined} onValueChange={(value) => selectSignature(Number(value))}>
+                        <SelectTrigger className="w-full max-w-[320px] md:w-[320px]" aria-label="Signature">
+                            <SelectValue placeholder="Choose a signature" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {signatures.map(signature => (
+                                <SelectItem key={signature.id} value={String(signature.id)}>
+                                    {signatureLabels.get(signature.id)}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                }
+            />
 
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex w-full justify-start gap-4 scrollable-x"
-            >
-                {sigantures.length ? sigantures.map((signature) => (
-                    <div
-                        key={signature.id}
-                        className={`${selectedSignatureId === signature.id ? "border-blue-400" : "border-gray-400"} bg-white w-40 h-30 rounded-md border-1 hover:border-blue-200 transition cursor-pointer p-4`} onClick={() => {
-                            setSelectedSignatureId(signature.id);
-                            setCurrentSignatureMonthlyGoal(Number(signature.monthly_goal));
-                            fetchSignatureAnalyticsDetails(signature.id);
-                        }}
-                    >
-                        <div className="w-full h-full pr-2 overflow-hidden">
-                            <div className="w-[500px] h-[500px]">
-                                <Signature
-                                    className="pointer-events-none scale-50 origin-top-left"
-                                    html={signature.html}
-                                />
+            <div className={`flex flex-col gap-6 transition-opacity ${isLoading ? 'pointer-events-none opacity-50' : ''}`} aria-busy={isLoading}>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
+                        <span className="text-[13px] font-medium text-muted-foreground">This month</span>
+                        <span className="font-display text-4xl font-medium tracking-[-0.03em] text-ink">{stats.thisMonth}</span>
+                        <span className="text-[13px] text-muted-foreground">{stats.change || 'No clicks yet'}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
+                        <span className="text-[13px] font-medium text-muted-foreground">Last month</span>
+                        <span className="font-display text-4xl font-medium tracking-[-0.03em] text-ink">{stats.previousMonth}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
+                        <span className="text-[13px] font-medium text-muted-foreground">All time</span>
+                        <span className="font-display text-4xl font-medium tracking-[-0.03em] text-ink">{stats.total}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[13px] font-medium text-muted-foreground">Monthly goal</span>
+                            {!isEditingGoal && (
+                                <Button variant="ghost" size="icon-sm" className="-my-1 -mr-2" aria-label="Edit goal" title="Edit goal"
+                                    onClick={() => { setGoalDraft(monthlyGoal ? String(monthlyGoal) : ''); setIsEditingGoal(true); }}>
+                                    <Pencil />
+                                </Button>
+                            )}
+                        </div>
+                        {isEditingGoal ? (
+                            <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); handleSaveGoal(); }}>
+                                <Input type="number" min={1} step={1} autoFocus value={goalDraft} onChange={(e) => setGoalDraft(e.target.value)} aria-label="Clicks per month" placeholder="Clicks per month" />
+                                <div className="flex gap-2">
+                                    <Button type="submit" size="sm" disabled={isSavingGoal}>Save</Button>
+                                    <Button type="button" size="sm" variant="ghost" onClick={() => setIsEditingGoal(false)}>Cancel</Button>
+                                </div>
+                            </form>
+                        ) : monthlyGoal > 0 ? (
+                            <>
+                                <span className="font-display text-4xl font-medium tracking-[-0.03em] text-ink">
+                                    {progressValue}<span className="text-xl">%</span>
+                                </span>
+                                <Progress value={progressValue} className="h-1.5" />
+                                <span className="text-[13px] text-muted-foreground">{stats.thisMonth} of {monthlyGoal} clicks</span>
+                            </>
+                        ) : (
+                            <span className="text-[13px] text-muted-foreground">Set a target number of clicks for this month.</span>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
+                        <h2 className="font-sans text-[15px] font-semibold tracking-normal">Clicks per month</h2>
+                        <ClicksChart data={stats.monthly} dataKey="month" />
+                    </div>
+                    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
+                        <h2 className="font-sans text-[15px] font-semibold tracking-normal">Clicks in the last 7 days</h2>
+                        <ClicksChart data={stats.daily} dataKey="day" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
+                        <h2 className="font-sans text-[15px] font-semibold tracking-normal">Clicks by link</h2>
+                        {links.length > 0 ? (
+                            <ul className="flex flex-col">
+                                {links.map(link => (
+                                    <li key={link.id} className="flex items-center gap-3 border-t border-line py-3 first:border-t-0 first:pt-0">
+                                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-cream">{getLinkIcon(link.link_key)}</span>
+                                        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                                            <div className="flex items-baseline justify-between gap-3">
+                                                <span className="truncate text-sm font-medium text-ink">{LINK_LABELS[link.link_key.toLowerCase()] ?? link.link_key}</span>
+                                                <span className="text-sm font-medium tabular-nums text-ink">{link.clicks}</span>
+                                            </div>
+                                            <div className="h-1 overflow-hidden rounded-full bg-ink/[0.06]">
+                                                <div className="h-full rounded-full bg-action" style={{ width: `${(link.clicks / maxLinkClicks) * 100}%` }} />
+                                            </div>
+                                            <span className="truncate text-xs text-muted-foreground" title={link.target_url}>{link.target_url}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">This signature has no links.</p>
+                        )}
+                    </div>
+
+                    {selectedSignature && (
+                        <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
+                            <h2 className="font-sans text-[15px] font-semibold tracking-normal">Signature</h2>
+                            <div className="bg-white">
+                                <ScaledSignature html={selectedSignature.html} />
                             </div>
                         </div>
-                    </div>
-                )) : <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-gray-500 text-sm"
-                >
-                    no signatures created yet
-                </motion.p>}
-            </motion.div>
-
-            <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-            >
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Основной контент - графики */}
-                    <div className="flex-1">
-                        <div className="grid grid-cols-1 gap-6">
-                            <motion.div variants={itemVariants}>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Clicks Last 6 Months</CardTitle>
-                                        <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
-                                            <BarChart accessibilityLayer data={getMonthlyClicksData()}>
-                                                <XAxis
-                                                    dataKey="month"
-                                                    tickLine={false}
-                                                    tickMargin={10}
-                                                    axisLine={false}
-                                                    tickFormatter={(value) => value.slice(0, 3)}
-                                                />
-                                                <ChartTooltip content={<ChartTooltipContent />} />
-                                                <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
-                                            </BarChart>
-                                        </ChartContainer>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-
-                            <motion.div variants={itemVariants}>
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Clicks Last 7 Days</CardTitle>
-                                        <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ChartContainer config={chartConfig2} className="max-h-[200px] w-full">
-                                            <BarChart accessibilityLayer data={getLast7DaysClicksData()}>
-                                                <XAxis
-                                                    dataKey="day"
-                                                    tickLine={false}
-                                                    tickMargin={10}
-                                                    axisLine={false}
-                                                    tickFormatter={(value) => value.slice(0, 3)}
-                                                />
-                                                <ChartTooltip content={<ChartTooltipContent />} />
-                                                <Bar dataKey="clicks" fill="var(--color-desktop)" radius={4} />
-                                            </BarChart>
-                                        </ChartContainer>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        </div>
-                    </div>
-
-                    {/* Боковая панель с метриками */}
-                    <div className="w-full lg:w-80 space-y-6">
-                        <motion.div variants={itemVariants}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Clicks (last month)</CardTitle>
-                                    <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{getClicksLastMonth().length}</div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-
-                        <motion.div variants={itemVariants}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Clicks (this month)</CardTitle>
-                                    <MousePointerClick className="h-5 w-5 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{getClicksThisMonth().length}</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {getDifferenceBetweenLastAndCurrentMonthClicks()} from last month
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-
-                        <motion.div variants={itemVariants}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Monthly Goal</CardTitle>
-                                    <Target className="h-5 w-5 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{currentSignatureMonthlyGoal}</div>
-                                    <p className="text-xs text-muted-foreground">Progress: {progressValue || 0}%</p>
-                                    <Progress value={progressValue} className="mt-2 h-2 mb-4" />
-                                    <div className="flex gap-2 items-center">
-                                        <Button variant="outline" size="sm" className="cursor-pointer" onClick={handleUpdateMonthlyGoal}>
-                                            {isEditable ? "save" : "edit goal"}
-                                        </Button>
-                                        {isEditable && (
-                                            <Input
-                                                type="number"
-                                                value={newGoal ? newGoal.toString() : ""}
-                                                onChange={(e) => setNewGoal(Number(e.target.value))}
-                                            />
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-
-                        <motion.div variants={itemVariants}>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Clicked Links</CardTitle>
-                                    <Link2Icon className="h-5 w-5 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    {linksData.length > 0 ? (
-                                        <ul className="space-y-3">
-                                            {linksData.map(link => (
-                                                <li className="flex items-center justify-between w-full" key={link.id}>
-                                                    <div className="flex items-center gap-2">
-                                                        {getLinkIcon(link.link_key)}
-                                                        <span className="text-xs leading-none">
-                                                            {link.link_key}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-xs font-bold leading-none">
-                                                        {getClicksForLink(link.id).length}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground">No links inside signature</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </div>
+                    )}
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }
-
-

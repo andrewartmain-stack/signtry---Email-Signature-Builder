@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,9 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertTitle } from '@/components/ui/alert';
-import { AnimatePresence, motion } from 'motion/react';
-import CheckboxItem from './CheckboxItem';
+import { useToast } from './Toast';
 
 type UserProfile = {
     id: string | null;
@@ -25,24 +25,11 @@ type UserProfile = {
 
 export function SettingsModal({ userProfile, isOpen, setIsOpen, fetchAuthenticatedUserData }: { userProfile: UserProfile, isOpen: boolean, setIsOpen: React.Dispatch<React.SetStateAction<boolean>>, fetchAuthenticatedUserData: () => void }) {
 
-    const [errorAlertMessage, setErrorAlertMessage] = useState<string>('');
-    const [successAlertMessages, setSuccessAlertMessages] = useState<string[]>([]);
-    const [isDeleteConfirmed, setIsDeleteConfirmed] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleShowErrorAlert = (message: string) => {
-        setErrorAlertMessage(message);
-        setTimeout(() => setErrorAlertMessage(''), 3000);
-    }
-
-    const handleShowSuccessAlerts = (messages: string[] | string) => {
-        if (typeof messages === 'string') {
-            setSuccessAlertMessages([messages]);
-        } else {
-            setSuccessAlertMessages(messages);
-        }
-
-        setTimeout(() => setSuccessAlertMessages([]), 4000);
-    };
+    const toast = useToast();
 
     const updateUserData = async (formData: FormData) => {
         const response = await fetch('/api/updateUserData', {
@@ -50,27 +37,28 @@ export function SettingsModal({ userProfile, isOpen, setIsOpen, fetchAuthenticat
             body: formData,
         });
 
-        const data = await response.json();
-
+        const data = await response.json().catch(() => ({}));
+        const messages: string[] = Array.isArray(data.message) ? data.message : [data.message].filter(Boolean);
 
         if (response.ok) {
-            handleShowSuccessAlerts(data.message);
+            toast('success', messages.join(' ') || 'Saved');
         } else {
-            handleShowErrorAlert(data.message);
-            console.error('Signup Failed: ', data.message);
+            toast('error', messages.join(' ') || 'Could not save changes');
         }
     }
 
     const deleteUserAccount = async () => {
-        const response = await fetch(`api/delete-user?user_id=${userProfile.id}`, {
+        setIsDeleting(true);
+        const response = await fetch(`/api/delete-user?user_id=${userProfile.id}`, {
             method: 'DELETE',
         })
 
         if (response.ok) {
             window.location.href = '/login';
         } else {
-            const data = await response.json()
-            console.error(data.message)
+            const data = await response.json().catch(() => ({}));
+            toast('error', data.message || 'Could not delete your account');
+            setIsDeleting(false);
         }
     }
 
@@ -79,69 +67,22 @@ export function SettingsModal({ userProfile, isOpen, setIsOpen, fetchAuthenticat
 
         const formData = new FormData(event.currentTarget)
 
-        await updateUserData(formData);
-
-        fetchAuthenticatedUserData();
-    }
-
-    const onSubmitDelete = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        await deleteUserAccount();
+        setIsSubmitting(true);
+        try {
+            await updateUserData(formData);
+            fetchAuthenticatedUserData();
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <AnimatePresence>
-                {errorAlertMessage && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20, scale: 0.8 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.8 }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30
-                        }}
-                        className="absolute top-4 right-4 z-100"
-                    >
-                        <Alert className="bg-red-500 text-white border-none shadow-lg w-fit backdrop-blur-sm">
-                            <AlertTitle className="font-semibold flex items-center gap-2">
-                                Signup Failed: {errorAlertMessage}
-                            </AlertTitle>
-                        </Alert>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {successAlertMessages.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20, scale: 0.8 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.8 }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30
-                        }}
-                        className="absolute top-4 right-4 z-100 flex gap-3"
-                    >
-                        {successAlertMessages.map((msg, idx) => (
-                            <Alert key={idx} className="bg-green-500 text-white border-none shadow-lg w-fit backdrop-blur-sm">
-                                <AlertTitle className="font-semibold flex items-center gap-2">
-                                    Success: {msg}
-                                </AlertTitle>
-                            </Alert>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[440px]">
                 <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
-                        Make changes to your profile here. Click save when you&apos;re done.
+                        Update your profile and sign-in details.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -152,36 +93,48 @@ export function SettingsModal({ userProfile, isOpen, setIsOpen, fetchAuthenticat
                     </TabsList>
 
                     <TabsContent value="profile">
-                        <form onSubmit={onSubmit} className="space-y-4 py-4">
-                            <div>
-                                <Label htmlFor="fullname" className="mb-2">Full Name</Label>
+                        <form onSubmit={onSubmit} className="flex flex-col gap-4 pt-4">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="fullname">Full name</Label>
                                 <Input id="fullname" name="fullname" defaultValue={userProfile.fullName || ''} />
                             </div>
-                            <div>
-                                <Label htmlFor="avatar" className="mb-2">Avatar</Label>
-                                <Input id="avatar" name="avatar" type="file" />
-                                <p className="text-xs text-gray-500 mt-1">Upload a new image file.</p>
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="avatar">Avatar</Label>
+                                <Input id="avatar" name="avatar" type="file" accept="image/*" className="h-auto py-1.5" />
                             </div>
-                            <Button type="submit" className="cursor-pointer">Save changes</Button>
+                            <Button type="submit" className="w-fit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="animate-spin" />} Save changes
+                            </Button>
                         </form>
                     </TabsContent>
 
                     <TabsContent value="security">
-                        <form onSubmit={onSubmit} className="space-y-4 py-4">
-                            <div>
-                                <Label htmlFor="email" className="mb-2">Email</Label>
+                        <form onSubmit={onSubmit} className="flex flex-col gap-4 pt-4">
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="email">Email</Label>
                                 <Input id="email" name="email" type="email" defaultValue={userProfile.email || ''} />
                             </div>
-                            <div>
-                                <Label htmlFor="password" className="mb-2">New Password</Label>
-                                <Input id="password" name="password" type="password" placeholder="Leave blank to keep the same" />
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="password">New password</Label>
+                                <Input id="password" name="password" type="password" placeholder="Leave blank to keep the current one" autoComplete="new-password" />
                             </div>
-                            <Button type="submit" className="cursor-pointer">Update Credentials</Button>
+                            <Button type="submit" className="w-fit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="animate-spin" />} Update sign-in details
+                            </Button>
                         </form>
-                        <form onSubmit={onSubmitDelete} className="space-y-4 py-4">
-                            <Label htmlFor="delete" className="mb-2">---Danger Zone---</Label>
-                            <CheckboxItem id="delete" isChecked={isDeleteConfirmed} onCheckedChange={() => setIsDeleteConfirmed(!isDeleteConfirmed)} text="Delete Confirmation" />
-                            <Button type="submit" disabled={!isDeleteConfirmed} variant="outline" className="cursor-pointer bg-red-100 border-red-400 hover:bg-red-200">Delete Account</Button>
+
+                        <form
+                            onSubmit={(e) => { e.preventDefault(); deleteUserAccount(); }}
+                            className="mt-6 flex flex-col gap-3 rounded-xl border border-destructive/25 bg-destructive/[0.03] p-4"
+                        >
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm font-medium text-ink">Delete account</span>
+                                <span className="text-[13px] text-muted-foreground">Permanently removes your account and signatures. Type DELETE to confirm.</span>
+                            </div>
+                            <Input value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} aria-label="Type DELETE to confirm" placeholder="DELETE" />
+                            <Button type="submit" variant="destructive" className="w-fit" disabled={deleteConfirmation !== 'DELETE' || isDeleting}>
+                                {isDeleting && <Loader2 className="animate-spin" />} Delete account
+                            </Button>
                         </form>
                     </TabsContent>
                 </Tabs>

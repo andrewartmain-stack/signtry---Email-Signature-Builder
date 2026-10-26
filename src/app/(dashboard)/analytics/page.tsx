@@ -1,67 +1,60 @@
-import { redirect } from 'next/navigation'
-
 import AnalyticsClient from './AnalyticsClient'
 
-import { createClient } from '../../utils/supabase/server'
+import { requireSubscribedSession } from '../../utils/supabase/session'
 import { SavedSignatureDataInterface } from '../../types'
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ signature?: string }> }) {
 
-    const supabase = await createClient()
-
-    const { data: userData, error } = await supabase.auth.getUser()
-    if (error || !userData?.user) {
-        redirect('/login')
-    }
-
-    const { data: profile, error: errorGettingProfile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).single();
-
-    if (errorGettingProfile) {
-        console.error(errorGettingProfile.message);
-        redirect('/login');
-    }
-
-    if (profile.is_subscribed === false) {
-        redirect('/subscription-plan');
-    }
+    const [{ supabase, user }, { signature: requestedId }] = await Promise.all([
+        requireSubscribedSession(),
+        searchParams,
+    ])
 
     const { data: signatures, error: signaturesError } = await supabase
         .from('saved_signatures')
         .select('*')
-        .eq('user_id', userData.user.id);
+        .eq('user_id', user.id)
+        .order('id', { ascending: false });
 
     if (signaturesError) {
         console.error(signaturesError)
     }
 
+    // "Analytics" on a signature card links here with ?signature=<id>
+    const selected = signatures?.find(signature => String(signature.id) === requestedId) ?? signatures?.[0];
 
     let clicksAnalyticsData = [];
     let linksAnalyticsData = [];
 
-    if (signatures?.length) {
-        const { data: clicksData, error: errorFetchingClicksAnalytics } = await supabase
-            .from('signature_clicks')
-            .select('*')
-            .eq('signature_id', signatures[0].id);
+    if (selected) {
+        // Clicks and links of the selected signature are independent, fetch both at once
+        const [clicksResult, linksResult] = await Promise.all([
+            supabase.from('signature_clicks').select('*').eq('signature_id', selected.id),
+            supabase.from('signature_links').select('*').eq('signature_id', selected.id),
+        ]);
 
-        if (errorFetchingClicksAnalytics) {
-            console.error(errorFetchingClicksAnalytics.message);
+        if (clicksResult.error) {
+            console.error(clicksResult.error.message);
         }
 
-        if (clicksData) {
-            clicksAnalyticsData = clicksData;
+        if (clicksResult.data) {
+            clicksAnalyticsData = clicksResult.data;
         }
 
-        const { data: linksData, error: errorFetchingLinksData } = await supabase.from("signature_links").select("*").eq('signature_id', signatures[0].id);
-
-        if (errorFetchingLinksData) {
-            console.error(errorFetchingLinksData.message);
+        if (linksResult.error) {
+            console.error(linksResult.error.message);
         }
 
-        if (linksData) {
-            linksAnalyticsData = linksData;
+        if (linksResult.data) {
+            linksAnalyticsData = linksResult.data;
         }
     }
 
-    return <AnalyticsClient savedSignatures={signatures as SavedSignatureDataInterface[]} initialAnalyticsData={clicksAnalyticsData} initialLinksData={linksAnalyticsData} />
+    return <AnalyticsClient
+        key={selected?.id ?? 'none'}
+        savedSignatures={(signatures ?? []) as SavedSignatureDataInterface[]}
+        initialSignatureId={selected?.id ?? null}
+        initialAnalyticsData={clicksAnalyticsData}
+        initialLinksData={linksAnalyticsData}
+    />
 }

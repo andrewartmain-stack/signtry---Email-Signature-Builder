@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { brittiSansTrial } from "./fonts";
+import { geist } from "./fonts";
 import "./global.css";
 
 export const metadata: Metadata = {
@@ -20,9 +20,9 @@ export default function RootLayout({
     return (
         <html lang="en" className="h-full">
             <body
-                className={`${brittiSansTrial.variable} h-full antialiased`}
+                className={`${geist.variable} h-full antialiased`}
             >
-                <main className="absolute inset-0 w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+                <main className="absolute inset-0 w-full bg-cream">
                     {children}
                 </main>
             </body>

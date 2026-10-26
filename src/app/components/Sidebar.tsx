@@ -5,34 +5,41 @@ import { createClient } from '../utils/supabase/client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import Avatar from './Avatar';
-import Marker from './Marker';
-
 import {
-    PlusSquare,
-    Package,
+    PenLine,
+    Layers,
     BarChart3,
-    Video,
-    CircleDollarSign,
+    BookOpen,
+    CreditCard,
     Settings,
     LogOut,
+    ArrowUpRight,
 } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
+import Tag from './Tag';
+import { SettingsModal } from './SettingsModal';
 
 import avatar from "../../../public/avatar.png"
 import logo from '../../../public/logo-full.png'
-import { SettingsModal } from './SettingsModal';
 
-const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string | null, email: string, plan: string } | null, fetchAuthenticatedUserData: () => void }> = ({ userData, fetchAuthenticatedUserData }) => {
+export type SidebarUserData = { id: string, fullName: string, avatarUrl: string | null, email: string, plan: string };
 
-    const [isSettignsOpen, setIsSettingsOpen] = useState<boolean>(false);
+const navLinks = [
+    { href: "/generateSignature", icon: PenLine, label: "Create signature" },
+    { href: "/signatures", icon: Layers, label: "My signatures" },
+    { href: "/analytics", icon: BarChart3, label: "Analytics" },
+    { href: "/guides", icon: BookOpen, label: "Install guides" },
+];
 
-    const navLinks = [
-        { href: "/generateSignature", icon: PlusSquare, label: "Generate" },
-        { href: "/signatures", icon: Package, label: "Signatures" },
-        { href: "/analytics", icon: BarChart3, label: "Analytics" },
-        { href: "/guides", icon: Video, label: "Guides" },
-        { href: "https://billing.stripe.com/p/login/cNi6oGeER2vo0NU1Ng93y00", icon: CircleDollarSign, label: "Manage Subscriptions" },
-    ];
+const BILLING_URL = "https://billing.stripe.com/p/login/cNi6oGeER2vo0NU1Ng93y00";
+
+const itemClass = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-action/35";
+
+const Sidebar: FC<{ userData: SidebarUserData | null, fetchAuthenticatedUserData: () => void, onNavigate?: () => void }> = ({ userData, fetchAuthenticatedUserData, onNavigate }) => {
+
+    const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
     const pathName = usePathname();
 
@@ -45,18 +52,15 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
 
     return (
         <>
-            {userData && <SettingsModal userProfile={{ id: userData.id, fullName: userData.fullName, avatarUrl: userData.avatarUrl, email: userData.email }} isOpen={isSettignsOpen} setIsOpen={setIsSettingsOpen} fetchAuthenticatedUserData={fetchAuthenticatedUserData} />}
+            {userData && <SettingsModal userProfile={{ id: userData.id, fullName: userData.fullName, avatarUrl: userData.avatarUrl, email: userData.email }} isOpen={isSettingsOpen} setIsOpen={setIsSettingsOpen} fetchAuthenticatedUserData={fetchAuthenticatedUserData} />}
 
-            <aside className="bg-slate-50 w-[240px] p-4 h-screen flex flex-col justify-between border-r border-slate-200">
-                <div>
-                    {/* --- Логотип --- */}
-                    <div className="px-2 mb-8">
-                        <img src={logo.src} width={120} alt="logo" />
-                    </div>
+            <aside className="flex h-full w-[260px] flex-col justify-between border-r border-line bg-soft p-4">
+                <div className="flex flex-col gap-8">
+                    <Link href="/generateSignature" onClick={onNavigate} className="px-3 pt-2">
+                        <img src={logo.src} width={116} alt="SignTry" />
+                    </Link>
 
-                    {/* --- Основная навигация --- */}
-                    <nav>
-                        <h3 className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu</h3>
+                    <nav aria-label="Main">
                         <ul className="flex flex-col gap-1">
                             {navLinks.map((link) => {
                                 const Icon = link.icon;
@@ -65,12 +69,13 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
                                     <li key={link.href}>
                                         <Link
                                             href={link.href}
-                                            className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 group ${isActive
-                                                ? 'bg-[#dee7ff] text-black border-black border-[1px]'
-                                                : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                                                }`}
+                                            onClick={onNavigate}
+                                            aria-current={isActive ? 'page' : undefined}
+                                            className={cn(itemClass, isActive
+                                                ? 'bg-card text-ink shadow-[0_1px_2px_rgba(6,27,49,0.08)] ring-1 ring-line'
+                                                : 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}
                                         >
-                                            <Icon className={`h-5 w-5 transition-colors ${isActive ? 'text-black' : 'text-slate-500 group-hover:text-slate-800'}`} />
+                                            <Icon className="size-[18px]" />
                                             <span>{link.label}</span>
                                         </Link>
                                     </li>
@@ -80,29 +85,42 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
                     </nav>
                 </div>
 
-                <div className="border-t border-slate-200 pt-4">
-                    <div className="flex w-full items-center gap-3 mb-3 relative p-2">
-                        <Avatar src={userData?.avatarUrl ? userData.avatarUrl : avatar.src} />
-                        <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-slate-800">{userData?.fullName}</span>
-                            <Marker>{userData?.plan}</Marker>
-                        </div>
-                    </div>
-
-                    <ul className="flex flex-col">
+                <div className="flex flex-col gap-3">
+                    <ul className="flex flex-col gap-0.5">
                         <li>
-                            <button onClick={() => setIsSettingsOpen(true)} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 rounded-md hover:bg-slate-200 cursor-pointer">
-                                <Settings className="h-5 w-5 text-slate-500" />
+                            <a href={BILLING_URL} target="_blank" rel="noopener noreferrer" className={cn(itemClass, 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}>
+                                <CreditCard className="size-[18px]" />
+                                <span className="flex-1">Billing</span>
+                                <ArrowUpRight className="size-3.5" />
+                            </a>
+                        </li>
+                        <li>
+                            <button onClick={() => setIsSettingsOpen(true)} className={cn(itemClass, 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}>
+                                <Settings className="size-[18px]" />
                                 Settings
                             </button>
                         </li>
-                        <li>
-                            <button onClick={signout} className="flex cursor-pointer w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 rounded-md hover:bg-red-50 hover:text-red-600">
-                                <LogOut className="h-5 w-5 text-slate-500" />
-                                Log out
-                            </button>
-                        </li>
                     </ul>
+
+                    <div className="flex items-center gap-3 rounded-2xl border border-line bg-card p-3">
+                        <img
+                            src={userData?.avatarUrl || avatar.src}
+                            alt=""
+                            className="size-9 shrink-0 rounded-full object-cover"
+                        />
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                            <span className="truncate text-sm font-medium text-ink">{userData?.fullName || userData?.email}</span>
+                            {userData?.plan && <Tag className="w-fit px-2 py-0.5 text-[11px]">{userData.plan}</Tag>}
+                        </div>
+                        <button
+                            onClick={signout}
+                            className="cursor-pointer rounded-full p-2 text-muted-foreground transition-colors hover:bg-ink/[0.06] hover:text-ink"
+                            aria-label="Log out"
+                            title="Log out"
+                        >
+                            <LogOut className="size-4" />
+                        </button>
+                    </div>
                 </div>
             </aside>
         </>
@@ -110,4 +128,3 @@ const Sidebar: FC<{ userData: { id: string, fullName: string, avatarUrl: string 
 }
 
 export default Sidebar;
-

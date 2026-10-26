@@ -1,13 +1,13 @@
 import React from 'react'
 
-import Title from '../../components/Title';
+import PageHeader from '../../components/PageHeader';
 
 export default function Pricing() {
 
 
     return (
-        <div className="p-10 flex w-full justify-between">
-            <Title text="Pricing" tag="h2" />
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-8 md:py-10">
+            <PageHeader title="Pricing" />
         </div>
     )
 }

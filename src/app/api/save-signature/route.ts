@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '../../utils/supabase/server';
-import { extractLinksFromHtml } from '../../utils/extractLinksFromHtml';
-import { v4 as uuidv4 } from 'uuid';
+import { getSignatureQuota } from '../../utils/signatureLimits';
+import { trackSignatureLinks } from '../../utils/trackSignatureLinks';
+import {
+  getSignatureHtmlWarnings,
+  ImageSizes,
+  optimizeSignatureHtml,
+} from '../../utils/optimizeSignatureHtml';
 
-const SIGNATURE_LIMITS: Record<string, number> = {
-  [process.env.NEXT_PUBLIC_PRICE_ID_BASIC_MONTHLY!]: 5, // Basic monthly
-  [process.env.NEXT_PUBLIC_PRICE_ID_BASIC_YEARLY!]: 5, // Basic yearly
-  [process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_MONTHLY!]: 50, // Professional monthly
-  [process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_YEARLY!]: 50, // Professional yearly
-  ['unlimited_edition_for_admin_only']: 10000, // Admin Only
-};
+// One request saves up to this many signatures (bulk generation sends chunks)
+const MAX_SIGNATURES_PER_REQUEST = 25;
+
+interface SignatureToSave {
+  html: string;
+  photoUrl?: string;
+  signatureImageUrl?: string;
+  bannerUrl?: string;
+  companyLogoUrl?: string;
+  imageSizes?: ImageSizes;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,103 +33,102 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('price_id')
-      .eq('id', user.id)
-      .single();
+    const body = await req.json();
+    const signatures: SignatureToSave[] = Array.isArray(body.signatures) ? body.signatures : [];
 
-    const priceId = profile?.price_id;
+    if (
+      signatures.length === 0 ||
+      signatures.length > MAX_SIGNATURES_PER_REQUEST ||
+      signatures.some((signature) => typeof signature?.html !== 'string' || !signature.html)
+    ) {
+      return NextResponse.json({ message: 'Invalid signatures payload' }, { status: 400 });
+    }
 
-    const limit = SIGNATURE_LIMITS[priceId] ?? 5;
+    const { limit, remaining } = await getSignatureQuota(supabase, user.id);
 
-    const { count } = await supabase
-      .from('saved_signatures')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-
-    const signaturesCount = count ?? 0;
-
-    if (signaturesCount >= limit) {
+    if (signatures.length > remaining) {
       return NextResponse.json(
-        { message: `You have reached the limit (${limit}) for your plan.` },
+        {
+          message:
+            remaining === 0
+              ? `You have reached the limit (${limit}) for your plan.`
+              : `Your plan allows ${remaining} more signature${remaining === 1 ? '' : 's'} (limit ${limit}).`,
+          remaining,
+        },
         { status: 403 }
       );
     }
 
-    const body = await req.json();
-    let signatureHtml = body.signatureHtml;
-    const photoUrl = body.photoUrl;
-    const signatureImageUrl = body.signatureImageUrl;
-    const companyLogoUrl = body.companyLogoUrl;
-    const bannerUrl = body.bannerUrl;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin;
 
-    // 1️⃣ Извлекаем ссылки из HTML
-    const links = extractLinksFromHtml(signatureHtml);
-
-    // 2️⃣ Генерируем токены для каждой ссылки и создаём объект для вставки
-    const linksWithTokens = links.map((link) => {
-      const token = uuidv4(); // уникальный токен для каждой ссылки
+    // Track links (needs the ids), then optimize for email clients (drops ids)
+    const prepared = signatures.map((signature) => {
+      const { html, links } = trackSignatureLinks(signature.html, baseUrl);
       return {
-        link_key: link.id,
-        target_url: link.href,
-        token,
+        html: optimizeSignatureHtml(html, signature.imageSizes ?? {}),
+        links,
+        row: {
+          photoUrl: signature.photoUrl ?? '',
+          signatureImageUrl: signature.signatureImageUrl ?? '',
+          bannerUrl: signature.bannerUrl ?? '',
+          companyLogoUrl: signature.companyLogoUrl ?? '',
+          user_id: user.id,
+        },
       };
     });
 
-    // 3️⃣ Заменяем href в HTML на /r/<token>
-    linksWithTokens.forEach((link) => {
-      // простой replace, предполагаем что link.href уникален
-      signatureHtml = signatureHtml.replace(
-        new RegExp(`href="${link.target_url}"`, 'g'),
-        `href="api/r/${link.token}"`
-      );
-    });
-
-    // 4️⃣ Сохраняем подпись с уже обновлённым HTML
-    const { data: savedSignature, error: savedSignatureError } = await supabase
+    const { data: savedSignatures, error: savedSignatureError } = await supabase
       .from('saved_signatures')
-      .insert({
-        html: signatureHtml,
-        photoUrl,
-        signatureImageUrl,
-        bannerUrl,
-        companyLogoUrl,
-        user_id: user.id,
-      })
-      .select()
-      .single();
+      .insert(prepared.map((item) => ({ ...item.row, html: item.html })))
+      .select('id, html');
 
-    if (savedSignatureError) {
-      console.error(savedSignatureError.message);
+    if (savedSignatureError || !savedSignatures) {
+      console.error(savedSignatureError?.message);
       return NextResponse.json(
-        { message: savedSignatureError.message },
+        { message: savedSignatureError?.message ?? 'Could not save signatures' },
         { status: 500 }
       );
     }
 
-    // 5️⃣ Добавляем signature_id к ссылкам и вставляем в базу
-    const insertLinksData = linksWithTokens.map((link) => ({
-      signature_id: savedSignature.id,
-      link_key: link.link_key,
-      target_url: link.target_url,
-      token: link.token,
-    }));
+    // Each html contains unique link tokens, so it identifies its row reliably
+    const idByHtml = new Map(savedSignatures.map((saved) => [saved.html as string, saved.id]));
 
-    const { error: linksInsertError } = await supabase
-      .from('signature_links')
-      .insert(insertLinksData);
+    const insertLinksData = prepared.flatMap((item) =>
+      item.links.map((link) => ({ ...link, signature_id: idByHtml.get(item.html) }))
+    );
 
-    if (linksInsertError) {
-      console.error(linksInsertError.message);
-      return NextResponse.json(
-        { message: linksInsertError.message },
-        { status: 500 }
-      );
+    if (insertLinksData.length > 0) {
+      const { error: linksInsertError } = await supabase
+        .from('signature_links')
+        .insert(insertLinksData);
+
+      if (linksInsertError) {
+        console.error(linksInsertError.message);
+        // Without link rows every tracked link would be dead, so roll back
+        await supabase
+          .from('saved_signatures')
+          .delete()
+          .in('id', savedSignatures.map((saved) => saved.id))
+          .eq('user_id', user.id);
+
+        return NextResponse.json({ message: linksInsertError.message }, { status: 500 });
+      }
     }
+
+    revalidatePath('/signatures');
+    revalidatePath('/analytics');
 
     return NextResponse.json(
-      { message: 'Signature saved successfully!' },
+      {
+        message:
+          signatures.length === 1
+            ? 'Signature saved successfully!'
+            : `${signatures.length} signatures saved successfully!`,
+        ids: prepared.map((item) => idByHtml.get(item.html)),
+        // Final, tracked html so the client can copy it right after saving
+        htmls: prepared.map((item) => item.html),
+        warnings: [...new Set(prepared.flatMap((item) => getSignatureHtmlWarnings(item.html)))],
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -127,5 +136,6 @@ export async function POST(req: NextRequest) {
       console.error(error.message);
       return NextResponse.json({ message: error.message }, { status: 500 });
     }
+    return NextResponse.json({ message: 'Could not save signatures' }, { status: 500 });
   }
 }

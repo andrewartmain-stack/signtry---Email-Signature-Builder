@@ -22,6 +22,15 @@ export function generateSignatureImage(name: string) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.font = `${fontSize}px "Alex Brush"`;
+
+  // Thin white outline: invisible on white backgrounds, but keeps the black
+  // ink readable when dark mode (Apple Mail, Gmail app) paints a dark
+  // background behind the transparent PNG.
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 6;
+  ctx.lineJoin = 'round';
+  ctx.strokeText(name, padding, fontSize + padding / 2);
+
   ctx.fillStyle = '#000';
   ctx.fillText(name, padding, fontSize + padding / 2);
 

@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/app/utils/supabase/admin';
 
-export async function GET(req: NextRequest) {
-  const { pathname } = new URL(req.url);
-  const token = pathname.split('/').pop(); // извлекаем последний сегмент
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  const { token } = await params;
 
   const { data: link, error: linkError } = await supabaseAdmin
     .from('signature_links')
     .select('id, signature_id, target_url')
     .eq('token', token)
-    .single();
+    .maybeSingle();
 
   if (linkError || !link) {
-    console.error('Link not found: ', linkError.message);
+    console.error('Link not found: ', linkError?.message ?? token);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/not-found`
+      new URL('/not-found', process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin)
     );
   }
 
+  // Recording the click must never block or break the redirect
   const { error: clickError } = await supabaseAdmin
     .from('signature_clicks')
     .insert({

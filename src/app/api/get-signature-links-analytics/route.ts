@@ -8,6 +8,26 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only return analytics for the user's own signatures
+    const { data: signature } = await supabase
+      .from('saved_signatures')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!signature) {
+      return NextResponse.json({ message: 'Signature not found' }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from('signature_links')
       .select('*')
@@ -24,5 +44,6 @@ export async function GET(req: NextRequest) {
       console.error(error.message);
       return NextResponse.json({ message: error.message }, { status: 500 });
     }
+    return NextResponse.json({ message: 'Could not load analytics' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { createClient } from "../utils/supabase/server";
+import { getSession } from "../utils/supabase/session";
 
 import ClientLayoutWrapper from "../components/ClientLayoutWrapper";
 
@@ -8,8 +8,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, profile: profileData } = await getSession();
 
   let fullName: string = '';
   let email: string = '';
@@ -18,13 +17,6 @@ export default async function DashboardLayout({
   let priceId: string = ''
 
   if (user) {
-    // Fetch the full name from the 'profiles' table
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('full_name, avatar_url, price_id')
-      .eq('id', user.id)
-      .single();
-
     fullName = profileData?.full_name as string;
     email = user.email as string;
     avatarUrl = profileData?.avatar_url as string | null;

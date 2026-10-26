@@ -1,6 +1,13 @@
-import { DEMO_PHOTO, DEMO_SIGNATURE_IMAGE } from './base64Images';
+import { FormUserDataInterface } from './types';
 
-export const DEMO_USER_DATA = {
+// Static files in /public so they are cached by the browser instead of
+// being inlined into the JS bundle as base64.
+export const DEMO_PHOTO = '/demo/photo.jpg';
+export const DEMO_SIGNATURE_IMAGE = '/demo/signature.png';
+export const DEMO_BANNER = '/demo/banner.png';
+export const DEMO_COMPANY_LOGO_URL = '/demo/company-logo.png';
+
+export const DEMO_USER_DATA: FormUserDataInterface = {
   photoUrl: DEMO_PHOTO,
   firstName: 'John',
   lastName: 'Doe',
@@ -42,9 +49,9 @@ export const DEMO_USER_DATA = {
   phoneFontStyle: '',
   photoBorderRadius: 'border-radius: 10px !important;',
   buttons: '',
-  button1Text: 'enter text',
+  button1Text: 'Book a call',
   button1Link: '',
-  button2Text: 'enter text',
+  button2Text: 'Visit website',
   button2Link: '',
   bannerUrl: '',
   bannerLink: '',
@@ -55,4 +62,13 @@ export const DEMO_USER_DATA = {
   signatureBackgroundColor: '#ffffff',
   signatureBorderRadius: '10px',
   signaturePadding: '5px',
+  credentials: '',
+  pronouns: '',
+  licenseNumber: '',
+  address: '',
+  websiteUrl: '',
+  websiteLabel: '',
+  tagline: '',
+  accentColor: '#0b5cff',
+  fontFamily: 'Arial, Helvetica, sans-serif',
 };

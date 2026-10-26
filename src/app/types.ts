@@ -10,6 +10,9 @@ export interface SignatureTemplateInterface {
   id: number;
   html: string;
   alignment: string;
+  // Built-in industry templates have these; database templates count as "general"
+  category?: string;
+  name?: string;
 }
 
 export interface FormUserDataInterface {
@@ -68,6 +71,17 @@ export interface FormUserDataInterface {
   signatureBackgroundColor: string;
   signatureBorderRadius: string;
   signaturePadding: string;
+  // Used by the industry templates; ignored by templates without the placeholder
+  credentials: string;
+  pronouns: string;
+  licenseNumber: string;
+  address: string;
+  websiteUrl: string;
+  // Derived from websiteUrl: the text shown for the link
+  websiteLabel: string;
+  tagline: string;
+  accentColor: string;
+  fontFamily: string;
 }
 
 export interface ClickAnalyticsDataInterface {
