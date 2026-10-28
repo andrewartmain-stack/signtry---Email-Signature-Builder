@@ -1,6 +1,6 @@
 "use client"
 
-import React, { FC, useMemo, useState } from 'react'
+import React, { FC, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Check } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -15,6 +15,12 @@ import { CATEGORY_SAMPLES, TEMPLATE_CATEGORIES, TemplateCategory } from '../../t
 import { FormUserDataInterface, SignatureTemplateInterface } from '../../types'
 
 type Layout = 'all' | 'horizontal' | 'vertical';
+
+// Card border (2) + card padding (24) + preview padding (24)
+const CARD_CHROME = 50;
+const GRID_GAP = 12;
+// Two equal columns once each card can be at least this wide
+const MIN_CARD_WIDTH = 230;
 
 const categoryLabel = (id?: string) => TEMPLATE_CATEGORIES.find(category => category.id === id)?.label ?? 'General';
 
@@ -32,6 +38,23 @@ const StepTemplate: FC<{
     const selected = templates.find(template => template.id === selectedId);
     const [category, setCategory] = useState<string>(selected?.category && selected.category !== 'general' ? selected.category : 'all');
     const [layout, setLayout] = useState<Layout>('all');
+
+    // Equal-width cards; each signature keeps its natural size, centered,
+    // and only scales down when it is wider than its card
+    const listRef = useRef<HTMLDivElement>(null);
+    const [listWidth, setListWidth] = useState(0);
+    useLayoutEffect(() => {
+        const list = listRef.current;
+        if (!list) return;
+        const measure = () => setListWidth(list.clientWidth);
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(list);
+        return () => observer.disconnect();
+    }, []);
+
+    const columns = listWidth >= MIN_CARD_WIDTH * 2 + GRID_GAP ? 2 : 1;
+    const previewWidth = (listWidth - GRID_GAP * (columns - 1)) / columns - CARD_CHROME;
 
     const availableCategories = TEMPLATE_CATEGORIES.filter(item => templates.some(template => template.category === item.id));
 
@@ -98,7 +121,7 @@ const StepTemplate: FC<{
                 <p className="text-sm text-muted-foreground">No {layout === 'vertical' ? 'stacked' : 'side-by-side'} templates in this category yet.</p>
             )}
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+            <div ref={listRef} className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
                 {visible.map(template => {
                     const isSelected = template.id === selectedId;
                     const name = template.name ?? `Essential ${templates.filter(item => !item.name).indexOf(template) + 1}`;
@@ -115,8 +138,8 @@ const StepTemplate: FC<{
                                     : 'border-line hover:border-ink/25 hover:shadow-[0_8px_24px_-12px_rgba(6,27,49,0.25)]'
                             )}
                         >
-                            <div className="flex min-h-28 flex-1 items-center rounded-xl bg-white p-1">
-                                <ScaledSignature html={previews.get(template.id) ?? ''} />
+                            <div className="flex min-h-36 flex-1 items-center justify-center rounded-xl bg-white p-3">
+                                {previewWidth > 0 && <ScaledSignature html={previews.get(template.id) ?? ''} maxWidth={previewWidth} />}
                             </div>
                             <div className="flex items-center justify-between gap-2 px-1">
                                 <div className="flex min-w-0 flex-col">

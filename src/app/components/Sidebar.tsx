@@ -13,7 +13,6 @@ import {
     CreditCard,
     Settings,
     LogOut,
-    ArrowUpRight,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -32,8 +31,6 @@ const navLinks = [
     { href: "/analytics", icon: BarChart3, label: "Analytics" },
     { href: "/guides", icon: BookOpen, label: "Install guides" },
 ];
-
-const BILLING_URL = "https://billing.stripe.com/p/login/cNi6oGeER2vo0NU1Ng93y00";
 
 const itemClass = "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-action/35";
 
@@ -88,11 +85,17 @@ const Sidebar: FC<{ userData: SidebarUserData | null, fetchAuthenticatedUserData
                 <div className="flex flex-col gap-3">
                     <ul className="flex flex-col gap-0.5">
                         <li>
-                            <a href={BILLING_URL} target="_blank" rel="noopener noreferrer" className={cn(itemClass, 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}>
+                            <Link
+                                href="/billing"
+                                onClick={onNavigate}
+                                aria-current={pathName === '/billing' ? 'page' : undefined}
+                                className={cn(itemClass, pathName === '/billing'
+                                    ? 'bg-card text-ink shadow-[0_1px_2px_rgba(6,27,49,0.08)] ring-1 ring-line'
+                                    : 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}
+                            >
                                 <CreditCard className="size-[18px]" />
-                                <span className="flex-1">Billing</span>
-                                <ArrowUpRight className="size-3.5" />
-                            </a>
+                                Billing
+                            </Link>
                         </li>
                         <li>
                             <button onClick={() => setIsSettingsOpen(true)} className={cn(itemClass, 'text-muted-foreground hover:bg-ink/[0.05] hover:text-ink')}>

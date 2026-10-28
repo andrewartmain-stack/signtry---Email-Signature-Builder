@@ -22,6 +22,8 @@ export default function ClientLayoutWrapper({
 
     const [userData, setUserData] = useState<SidebarUserData | null>(initialUserData);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    // The plan comes from the server on every navigation, so it updates after a plan change
+    const sidebarUser = userData ? { ...userData, plan: initialUserData.plan } : null;
 
     const fetchAuthenticatedUserData = async () => {
         const supabase = await createClient();
@@ -49,7 +51,7 @@ export default function ClientLayoutWrapper({
             <div className="flex h-full w-full flex-col lg:flex-row">
                 {/* Desktop sidebar */}
                 <div className="hidden h-full lg:block">
-                    <Sidebar userData={userData} fetchAuthenticatedUserData={fetchAuthenticatedUserData} />
+                    <Sidebar userData={sidebarUser} fetchAuthenticatedUserData={fetchAuthenticatedUserData} />
                 </div>
 
                 {/* Mobile top bar + drawer */}
@@ -74,7 +76,7 @@ export default function ClientLayoutWrapper({
                                 exit={{ x: -280 }}
                                 transition={{ type: 'spring', stiffness: 400, damping: 40 }}
                             >
-                                <Sidebar userData={userData} fetchAuthenticatedUserData={fetchAuthenticatedUserData} onNavigate={() => setIsMobileNavOpen(false)} />
+                                <Sidebar userData={sidebarUser} fetchAuthenticatedUserData={fetchAuthenticatedUserData} onNavigate={() => setIsMobileNavOpen(false)} />
                                 <button
                                     onClick={() => setIsMobileNavOpen(false)}
                                     className="absolute top-4 right-3 cursor-pointer rounded-full p-2 text-ink hover:bg-ink/[0.06]"

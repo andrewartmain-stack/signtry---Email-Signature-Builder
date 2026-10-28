@@ -1,13 +1,6 @@
-import React from 'react'
+import { redirect } from 'next/navigation'
 
-import PageHeader from '../../components/PageHeader';
-
+// Plans live in Billing
 export default function Pricing() {
-
-
-    return (
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 px-4 py-6 md:px-8 md:py-10">
-            <PageHeader title="Pricing" />
-        </div>
-    )
+    redirect('/billing')
 }

@@ -7,6 +7,7 @@ import { AlertCircle, ArrowRight, BookOpen, CheckCircle2, Copy, Loader2, Plus, U
 import { Button } from '@/components/ui/button'
 
 import { fetchSignatureQuota } from '../../services/api'
+import { planForSignatures, signaturesLabel } from '../../utils/plans'
 import { BUILDER_STEPS, BuilderStepId, DesignIssue } from '../../utils/signatureDesign'
 
 export interface SavedResult {
@@ -25,7 +26,7 @@ const StepSave: FC<{
     saved: SavedResult | null;
     saveButtonRef: RefObject<HTMLButtonElement | null>;
 }> = ({ issues, onFix, onSave, onOpenBulk, onCopy, onCreateAnother, isSaving, saved, saveButtonRef }) => {
-    const [quota, setQuota] = useState<{ limit: number; remaining: number } | null>(null);
+    const [quota, setQuota] = useState<{ limit: number; used: number; remaining: number } | null>(null);
 
     useEffect(() => {
         fetchSignatureQuota().then(setQuota).catch(() => setQuota(null));
@@ -71,6 +72,8 @@ const StepSave: FC<{
 
     const isReady = issues.length === 0;
     const noRoomLeft = quota !== null && quota.remaining <= 0;
+    // Smallest plan with room for one more signature
+    const nextPlan = quota ? planForSignatures(quota.used + 1) : null;
 
     return (
         <div className="flex flex-col gap-6">
@@ -123,7 +126,10 @@ const StepSave: FC<{
             {quota && (
                 <p className="text-[13px] text-muted-foreground">
                     {noRoomLeft
-                        ? <>You&apos;ve used all {quota.limit} signatures on your plan. Delete some in <Link href="/signatures" className="text-action hover:underline">My signatures</Link> or upgrade.</>
+                        ? <>You&apos;ve used all {signaturesLabel(quota.limit)} on your plan. Delete some in <Link href="/signatures" className="text-action hover:underline">My signatures</Link> or{' '}
+                            <Link href={nextPlan ? `/billing?size=${nextPlan.signatures}` : '/billing'} className="text-action hover:underline">
+                                {nextPlan ? `upgrade to ${signaturesLabel(nextPlan.signatures)}` : 'upgrade'}
+                            </Link>.</>
                         : <>{quota.remaining} of {quota.limit} signatures left on your plan.</>}
                 </p>
             )}

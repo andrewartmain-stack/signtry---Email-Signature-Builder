@@ -1,4 +1,5 @@
 import { getSession } from "../utils/supabase/session";
+import { getPlanForPrice } from "../utils/stripe/plans";
 
 import ClientLayoutWrapper from "../components/ClientLayoutWrapper";
 
@@ -14,34 +15,15 @@ export default async function DashboardLayout({
   let email: string = '';
   let avatarUrl: string | null = null;
   let id: string = ''
-  let priceId: string = ''
+  let plan: string = '';
 
   if (user) {
     fullName = profileData?.full_name as string;
     email = user.email as string;
     avatarUrl = profileData?.avatar_url as string | null;
     id = user.id as string;
-    priceId = profileData?.price_id as string;
-  }
-
-  let plan: string = '';
-
-  switch (priceId) {
-    case process.env.NEXT_PUBLIC_PRICE_ID_BASIC_MONTHLY:
-      plan = "Basic" as string;
-      break;
-    case process.env.NEXT_PUBLIC_PRICE_ID_BASIC_YEARLY:
-      plan = "Basic" as string;
-      break;
-    case process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_MONTHLY:
-      plan = "Professional" as string;
-      break;
-    case process.env.NEXT_PUBLIC_PRICE_ID_PROFESSIONAL_YEARLY:
-      plan = "Professional" as string;
-      break;
-    case "unlimited_edition_for_admin_only":
-      plan = "Admin" as string;
-      break;
+    // e.g. "10 signatures", or the name of a legacy plan
+    if (profileData?.is_subscribed) plan = (await getPlanForPrice(profileData.price_id))?.label ?? '';
   }
 
   return (

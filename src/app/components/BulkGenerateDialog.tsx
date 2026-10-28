@@ -1,6 +1,7 @@
 "use client"
 
 import React, { FC, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Download, FileSpreadsheet, ImagePlus, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ import {
 import { applyPersonToDesign, buildCsvTemplate, BulkPerson, parseBulkCsv } from '../utils/bulkSignatures'
 
 import { FormUserDataInterface } from '../types'
+import { CUSTOM_PLAN_MAILTO, planForSignatures, signaturesLabel } from '../utils/plans'
 
 // Signatures are built a few at a time (each needs image uploads) and saved
 // in chunks so a large team never hits request size or time limits.
@@ -56,7 +58,7 @@ const BulkGenerateDialog: FC<{
     const [csvText, setCsvText] = useState('');
     const [csvFileName, setCsvFileName] = useState('');
     const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-    const [quota, setQuota] = useState<{ limit: number; remaining: number } | null>(null);
+    const [quota, setQuota] = useState<{ limit: number; used: number; remaining: number } | null>(null);
     const [statuses, setStatuses] = useState<Record<number, RowStatus>>({});
     const [progress, setProgress] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
@@ -79,6 +81,8 @@ const BulkGenerateDialog: FC<{
     // Rerunning after a partial failure only retries rows not created yet
     const peopleToCreate = validPeople.filter(person => statuses[person.rowNumber]?.state !== 'done');
     const overQuota = quota !== null && peopleToCreate.length > quota.remaining;
+    // Smallest plan that has room for every row; null means 500+ (contact us)
+    const planForAll = quota ? planForSignatures(quota.used + peopleToCreate.length) : null;
 
     function handleDownloadTemplate() {
         const blob = new Blob([buildCsvTemplate(design, htmlTemplate)], { type: 'text/csv;charset=utf-8' });
@@ -260,7 +264,10 @@ const BulkGenerateDialog: FC<{
                         </div>
                         {overQuota && (
                             <p className="text-sm text-destructive">
-                                Your plan has room for {quota?.remaining} more signatures. Remove some rows or upgrade your plan.
+                                Your plan has room for {quota?.remaining} of these {peopleToCreate.length} people.{' '}
+                                {planForAll
+                                    ? <><Link href={`/billing?size=${planForAll.signatures}`} className="font-medium underline underline-offset-2">Upgrade to {signaturesLabel(planForAll.signatures)}</Link> to create all of them, or remove some rows.</>
+                                    : <><a href={CUSTOM_PLAN_MAILTO} className="font-medium underline underline-offset-2">Contact us</a> for 500+ signatures, or remove some rows.</>}
                             </p>
                         )}
 
